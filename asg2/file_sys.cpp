@@ -28,9 +28,17 @@ ostream& operator<< (ostream& out, file_type type) {
 inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
           << ", prompt = \"" << prompt() << "\"");
+   inode_ptr newNode = make_shared<inode>(file_type::DIRECTORY_TYPE);
+   newNode->getContents()->setPath("/", newNode);
+   root = newNode;
+   cwd = root;
 }
 
 const string& inode_state::prompt() { return prompt_; }
+
+inode_ptr inode_state::getCwd(){
+  return cwd;
+}
 
 ostream& operator<< (ostream& out, const inode_state& state) {
    out << "inode_state: root = " << state.root
@@ -55,7 +63,10 @@ int inode::get_inode_nr() const {
    return inode_nr;
 }
 
-
+base_file_ptr inode::getContents(){
+  return contents;
+}
+
 file_error::file_error (const string& what):
             runtime_error (what) {
 }
@@ -87,7 +98,14 @@ inode_ptr plain_file::mkfile (const string&) {
    throw file_error ("is a plain file");
 }
 
-
+void plain_file::setPath(const string& name, inode_ptr node){
+   throw file_error ("is a plain file");
+}
+
+string plain_file::getPath(inode_ptr node){
+   throw file_error ("is a plain file");
+}
+
 size_t directory::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
@@ -108,11 +126,28 @@ void directory::remove (const string& filename) {
 
 inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
-   return nullptr;
+   inode_ptr newDir = make_shared<inode>(file_type::DIRECTORY_TYPE);
+   dirents.insert(pair<string,inode_ptr>(dirname, newDir));
+   return newDir;
 }
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
-   return nullptr;
+   inode_ptr newFile = make_shared<inode>(file_type::DIRECTORY_TYPE);
+   dirents.insert(pair<string,inode_ptr>(filename, newFile));
+   return newFile;
+}
+
+void directory::setPath(const string& name, inode_ptr node){
+  dirents.insert(pair<string,inode_ptr>(name,node));
+}
+
+string directory::getPath(inode_ptr node){
+  for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
+    if (iter->second == node){
+      return iter->first;
+    }
+  }
+  return nullptr;
 }
 

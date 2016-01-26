@@ -54,7 +54,6 @@ void fn_echo (inode_state& state, const wordvec& words){
    cout << word_range (words.cbegin() + 1, words.cend()) << endl;
 }
 
-
 void fn_exit (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
@@ -79,6 +78,11 @@ void fn_make (inode_state& state, const wordvec& words){
 void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   if (words.size() <= 0){
+      cout << "mkdir: missing operand" << endl;
+      return;
+   }
+   state.getCwd()->getContents()->mkdir(words[1]);
 }
 
 void fn_prompt (inode_state& state, const wordvec& words){
@@ -89,6 +93,7 @@ void fn_prompt (inode_state& state, const wordvec& words){
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   cout << state.getCwd()->getContents()->getPath(state.getCwd()) << endl;
 }
 
 void fn_rm (inode_state& state, const wordvec& words){

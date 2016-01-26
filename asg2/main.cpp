@@ -36,7 +36,6 @@ void scan_options (int argc, char** argv) {
    }
 }
 
-
 // main -
 //    Main program which loops reading commands until end of file.
 
@@ -68,6 +67,8 @@ int main (int argc, char** argv) {
             // function.  Complain or call it.
             wordvec words = split (line, " \t");
             DEBUGF ('y', "words = " << words);
+            if (words.size() <= 0)
+               continue;
             command_fn fn = find_command_fn (words.at(0));
             fn (state, words);
          }catch (command_error& error) {
