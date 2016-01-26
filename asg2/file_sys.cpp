@@ -29,7 +29,6 @@ inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
           << ", prompt = \"" << prompt() << "\"");
    inode_ptr newNode = make_shared<inode>(file_type::DIRECTORY_TYPE);
-   //newNode->getContents()->setPath("/", newNode);
    root = newNode;
    cwd = root;
 }
@@ -132,8 +131,15 @@ void directory::writefile (const wordvec&) {
    throw file_error ("is a directory");
 }
 
+// Preconditions:
+// filename is the relative pathname of the parent 
+// directory of the file or directory to remove.
+// If the filename maps to a directory, there will be no 
+// subdirectories (or files?) inside.  Any recursion logic
+// will be handled by fn_rmr()  
 void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
+   dirents.erase(filename);
 }
 
 inode_ptr directory::mkdir (const string& dirname) {

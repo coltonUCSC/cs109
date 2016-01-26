@@ -15,6 +15,7 @@ command_hash cmd_hash {
    {"prompt", fn_prompt},
    {"pwd"   , fn_pwd   },
    {"rm"    , fn_rm    },
+   /* note function rmr absent from table wtf*/
 };
 
 command_fn find_command_fn (const string& cmd) {
@@ -88,7 +89,10 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-   state.getCwd()->getContents()->mkfile(words[1]);
+
+   for (auto it = words.begin()+1; it != words.end(); ++it){
+      state.getCwd()->getContents()->mkfile(*it);
+   }
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
@@ -98,9 +102,12 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-   auto newDir = state.getCwd()->getContents()->mkdir(words[1]);
-   newDir->getContents()->setPath("..", state.getCwd());
-   newDir->getContents()->setPath(".", newDir);
+
+   for (auto it = words.begin()+1; it != words.end(); ++it){
+      auto newDir = state.getCwd()->getContents()->mkdir(*it);
+      newDir->getContents()->setPath("..", state.getCwd());
+      newDir->getContents()->setPath(".", newDir);
+   }
 }
 
 void fn_prompt (inode_state& state, const wordvec& words){
@@ -117,6 +124,9 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   for (auto it = words.begin()+1; it != words.end(); ++it){
+      state.getCwd()->getContents()->remove(*it);
+   }  
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
