@@ -29,7 +29,7 @@ inode_state::inode_state() {
    DEBUGF ('i', "root = " << root << ", cwd = " << cwd
           << ", prompt = \"" << prompt() << "\"");
    inode_ptr newNode = make_shared<inode>(file_type::DIRECTORY_TYPE);
-   newNode->getContents()->setPath("/", newNode);
+   //newNode->getContents()->setPath("/", newNode);
    root = newNode;
    cwd = root;
 }
@@ -38,6 +38,10 @@ const string& inode_state::prompt() { return prompt_; }
 
 inode_ptr inode_state::getCwd(){
   return cwd;
+}
+
+void inode_state::setCwd(inode_ptr node){
+  cwd = node;
 }
 
 ostream& operator<< (ostream& out, const inode_state& state) {
@@ -106,6 +110,14 @@ string plain_file::getPath(inode_ptr node){
    throw file_error ("is a plain file");
 }
 
+wordvec plain_file::getAllPaths(inode_ptr node){
+  throw file_error ("is a plain file");
+}
+
+inode_ptr plain_file::getNode(const string& path){
+  throw file_error ("is a plain file");
+}
+
 size_t directory::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
@@ -150,4 +162,19 @@ string directory::getPath(inode_ptr node){
   }
   return nullptr;
 }
+
+wordvec directory::getAllPaths(inode_ptr node){
+  wordvec pathList;
+  for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
+    pathList.push_back(iter->first);
+  }
+  return pathList;
+}
+
+inode_ptr directory::getNode(const string& path){
+  return dirents.find(path)->second;
+}
+
+
+
 

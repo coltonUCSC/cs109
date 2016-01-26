@@ -38,6 +38,12 @@ int exit_status_message() {
    return exit_status;
 }
 
+// TODO modify all functions that can take either relative or
+// full pathnames, if pathname is full (starts with /) then we 
+// need to create and call a helper function that would traverse
+// the tree by searching each directory map for the partial string.
+// eg cd /home/colton/dir would need to set cwd to /, then search
+// the directory map for the next node (home).
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
@@ -46,6 +52,7 @@ void fn_cat (inode_state& state, const wordvec& words){
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   state.setCwd(state.getCwd()->getContents()->getNode(words[1]));
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -63,6 +70,10 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   auto pathList = state.getCwd()->getContents()->getAllPaths(state.getCwd());
+   for (size_t i = 0; i < pathList.size(); i++){
+      cout << pathList[i] << endl;
+   }
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
@@ -73,6 +84,11 @@ void fn_lsr (inode_state& state, const wordvec& words){
 void fn_make (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   if (words.size() <= 0){
+      cout << "mkdir: missing operand" << endl;
+      return;
+   }
+   state.getCwd()->getContents()->mkfile(words[1]);
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
@@ -82,7 +98,9 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-   state.getCwd()->getContents()->mkdir(words[1]);
+   auto newDir = state.getCwd()->getContents()->mkdir(words[1]);
+   newDir->getContents()->setPath("..", state.getCwd());
+   newDir->getContents()->setPath(".", newDir);
 }
 
 void fn_prompt (inode_state& state, const wordvec& words){

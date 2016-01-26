@@ -47,6 +47,19 @@ int main (int argc, char** argv) {
    scan_options (argc, argv);
    bool need_echo = want_echo();
    inode_state state;
+   // Initial shell setup before the primary loop
+   // this sets up a "true" root node above the
+   // mount point of /.
+   // This ensures the property that each directory inode 
+   // has only subdirectory and file nodes mapped. 
+   wordvec slash;
+   slash.push_back("mkdir");
+   slash.push_back("/");
+   fn_mkdir(state, slash);
+   wordvec cd;
+   cd.push_back("cd");
+   cd.push_back("/");
+   fn_cd(state, cd);
    try {
       for (;;) {
          try {
