@@ -41,8 +41,10 @@ class inode_state {
    public:
       inode_state();
       const string& prompt();
+      void setPrompt(string p);
       inode_ptr getCwd();
       void setCwd(inode_ptr node);
+      inode_ptr getRoot();
 };
 
 // class inode -
@@ -97,7 +99,7 @@ class base_file {
       virtual inode_ptr mkfile (const string& filename) = 0;
       virtual void setPath(const string& name, inode_ptr node) = 0;
       virtual string getPath(inode_ptr node) = 0;
-      virtual wordvec getAllPaths(inode_ptr node) = 0;
+      virtual wordvec getAllPaths() = 0;
       virtual inode_ptr getNode(const string& path) = 0;
 };
 
@@ -122,7 +124,7 @@ class plain_file: public base_file {
       virtual inode_ptr mkfile (const string& filename) override;
       virtual void setPath(const string& name, inode_ptr node) override;
       virtual string getPath(inode_ptr node) override;
-      virtual wordvec getAllPaths(inode_ptr node) override;
+      virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
 };
 
@@ -157,7 +159,7 @@ class directory: public base_file {
       virtual inode_ptr mkfile (const string& filename) override;
       virtual void setPath(const string& name, inode_ptr node) override;
       virtual string getPath(inode_ptr node) override;
-      virtual wordvec getAllPaths(inode_ptr node) override;
+      virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
 };
 

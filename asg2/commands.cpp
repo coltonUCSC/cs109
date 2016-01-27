@@ -15,7 +15,7 @@ command_hash cmd_hash {
    {"prompt", fn_prompt},
    {"pwd"   , fn_pwd   },
    {"rm"    , fn_rm    },
-   /* note function rmr absent from table wtf*/
+   {"rmr"   , fn_rmr   },
 };
 
 command_fn find_command_fn (const string& cmd) {
@@ -48,12 +48,20 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   // We should really consider breaking this up.
+   cout << state.getCwd()->getContents()->getNode(words[1])->getContents()->readfile() << endl;
+
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   state.setCwd(state.getCwd()->getContents()->getNode(words[1]));
+   inode_ptr cwd = state.getCwd();
+   // TODO initial setup fails with this bounds check in
+   // but cd .. in the root directory will seg fault 
+   //if (cwd == state.getRoot())
+   //   return;
+   state.setCwd(cwd->getContents()->getNode(words[1]));
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -71,7 +79,7 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   auto pathList = state.getCwd()->getContents()->getAllPaths(state.getCwd());
+   auto pathList = state.getCwd()->getContents()->getAllPaths();
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
@@ -89,10 +97,9 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-
-   for (auto it = words.begin()+1; it != words.end(); ++it){
-      state.getCwd()->getContents()->mkfile(*it);
-   }
+   inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
+   wordvec newData(words.begin()+2, words.end());
+   newFile->getContents()->writefile(newData);
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
@@ -113,6 +120,7 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 void fn_prompt (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   state.setPrompt(words[1]);
 }
 
 void fn_pwd (inode_state& state, const wordvec& words){

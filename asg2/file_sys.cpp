@@ -35,12 +35,20 @@ inode_state::inode_state() {
 
 const string& inode_state::prompt() { return prompt_; }
 
+void inode_state::setPrompt(string p) { prompt_ = p; }
+
 inode_ptr inode_state::getCwd(){
   return cwd;
 }
 
 void inode_state::setCwd(inode_ptr node){
   cwd = node;
+}
+
+// TODO double check to make sure this does not
+// violate encapsulation rules
+inode_ptr inode_state::getRoot(){
+  return root;
 }
 
 ostream& operator<< (ostream& out, const inode_state& state) {
@@ -87,6 +95,7 @@ const wordvec& plain_file::readfile() const {
 
 void plain_file::writefile (const wordvec& words) {
    DEBUGF ('i', words);
+   data = words;
 }
 
 void plain_file::remove (const string&) {
@@ -101,19 +110,19 @@ inode_ptr plain_file::mkfile (const string&) {
    throw file_error ("is a plain file");
 }
 
-void plain_file::setPath(const string& name, inode_ptr node){
+void plain_file::setPath(const string&, inode_ptr){
    throw file_error ("is a plain file");
 }
 
-string plain_file::getPath(inode_ptr node){
+string plain_file::getPath(inode_ptr){
    throw file_error ("is a plain file");
 }
 
-wordvec plain_file::getAllPaths(inode_ptr node){
+wordvec plain_file::getAllPaths(){
   throw file_error ("is a plain file");
 }
 
-inode_ptr plain_file::getNode(const string& path){
+inode_ptr plain_file::getNode(const string&){
   throw file_error ("is a plain file");
 }
 
@@ -151,7 +160,7 @@ inode_ptr directory::mkdir (const string& dirname) {
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
-   inode_ptr newFile = make_shared<inode>(file_type::DIRECTORY_TYPE);
+   inode_ptr newFile = make_shared<inode>(file_type::PLAIN_TYPE);
    dirents.insert(pair<string,inode_ptr>(filename, newFile));
    return newFile;
 }
@@ -169,7 +178,7 @@ string directory::getPath(inode_ptr node){
   return nullptr;
 }
 
-wordvec directory::getAllPaths(inode_ptr node){
+wordvec directory::getAllPaths(){
   wordvec pathList;
   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
     pathList.push_back(iter->first);
