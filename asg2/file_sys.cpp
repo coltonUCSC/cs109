@@ -152,7 +152,7 @@ inode_ptr directory::mkdir (const string& dirname) {
 
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
-   inode_ptr newFile = make_shared<inode>(file_type::DIRECTORY_TYPE);
+   inode_ptr newFile = make_shared<inode>(file_type::PLAIN_TYPE);
    dirents.insert(pair<string,inode_ptr>(filename, newFile));
    return newFile;
 }

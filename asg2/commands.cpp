@@ -48,6 +48,9 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   // We should really consider breaking this up.
+   cout << state.getCwd()->getContents()->getNode(words[1])->getContents()->readfile() << endl;
+
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
@@ -89,10 +92,9 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-
-   for (auto it = words.begin()+1; it != words.end(); ++it){
-      state.getCwd()->getContents()->mkfile(*it);
-   }
+   inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
+   wordvec newData(words.begin()+2, words.end());
+   newFile->getContents()->writefile(newData);
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
