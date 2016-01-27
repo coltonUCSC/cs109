@@ -71,7 +71,7 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   auto pathList = state.getCwd()->getContents()->getAllPaths(state.getCwd());
+   auto pathList = state.getCwd()->getContents()->getAllPaths();
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }

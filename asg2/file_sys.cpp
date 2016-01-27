@@ -87,6 +87,7 @@ const wordvec& plain_file::readfile() const {
 
 void plain_file::writefile (const wordvec& words) {
    DEBUGF ('i', words);
+   data = words;
 }
 
 void plain_file::remove (const string&) {
@@ -101,19 +102,19 @@ inode_ptr plain_file::mkfile (const string&) {
    throw file_error ("is a plain file");
 }
 
-void plain_file::setPath(const string& name, inode_ptr node){
+void plain_file::setPath(const string&, inode_ptr){
    throw file_error ("is a plain file");
 }
 
-string plain_file::getPath(inode_ptr node){
+string plain_file::getPath(inode_ptr){
    throw file_error ("is a plain file");
 }
 
-wordvec plain_file::getAllPaths(inode_ptr node){
+wordvec plain_file::getAllPaths(){
   throw file_error ("is a plain file");
 }
 
-inode_ptr plain_file::getNode(const string& path){
+inode_ptr plain_file::getNode(const string&){
   throw file_error ("is a plain file");
 }
 
@@ -169,7 +170,7 @@ string directory::getPath(inode_ptr node){
   return nullptr;
 }
 
-wordvec directory::getAllPaths(inode_ptr node){
+wordvec directory::getAllPaths(){
   wordvec pathList;
   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
     pathList.push_back(iter->first);
