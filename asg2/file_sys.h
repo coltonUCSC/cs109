@@ -24,7 +24,6 @@ using inode_ptr = shared_ptr<inode>;
 using base_file_ptr = shared_ptr<base_file>;
 ostream& operator<< (ostream&, file_type);
 
-
 // inode_state -
 //    A small convenient class to maintain the state of the simulated
 //    process:  the root (/), the current directory (.), and the
@@ -42,6 +41,8 @@ class inode_state {
    public:
       inode_state();
       const string& prompt();
+      inode_ptr getCwd();
+      void setCwd(inode_ptr node);
 };
 
 // class inode -
@@ -66,9 +67,9 @@ class inode {
    public:
       inode (file_type);
       int get_inode_nr() const;
+      base_file_ptr getContents();
 };
 
-
 // class base_file -
 // Just a base class at which an inode can point.  No data or
 // functions.  Makes the synthesized members useable only from
@@ -94,9 +95,12 @@ class base_file {
       virtual void remove (const string& filename) = 0;
       virtual inode_ptr mkdir (const string& dirname) = 0;
       virtual inode_ptr mkfile (const string& filename) = 0;
+      virtual void setPath(const string& name, inode_ptr node) = 0;
+      virtual string getPath(inode_ptr node) = 0;
+      virtual wordvec getAllPaths(inode_ptr node) = 0;
+      virtual inode_ptr getNode(const string& path) = 0;
 };
 
-
 // class plain_file -
 // Used to hold data.
 // synthesized default ctor -
@@ -116,6 +120,10 @@ class plain_file: public base_file {
       virtual void remove (const string& filename) override;
       virtual inode_ptr mkdir (const string& dirname) override;
       virtual inode_ptr mkfile (const string& filename) override;
+      virtual void setPath(const string& name, inode_ptr node) override;
+      virtual string getPath(inode_ptr node) override;
+      virtual wordvec getAllPaths(inode_ptr node) override;
+      virtual inode_ptr getNode(const string& path) override;
 };
 
 // class directory -
@@ -147,6 +155,10 @@ class directory: public base_file {
       virtual void remove (const string& filename) override;
       virtual inode_ptr mkdir (const string& dirname) override;
       virtual inode_ptr mkfile (const string& filename) override;
+      virtual void setPath(const string& name, inode_ptr node) override;
+      virtual string getPath(inode_ptr node) override;
+      virtual wordvec getAllPaths(inode_ptr node) override;
+      virtual inode_ptr getNode(const string& path) override;
 };
 
 #endif
