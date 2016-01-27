@@ -41,8 +41,10 @@ class inode_state {
    public:
       inode_state();
       const string& prompt();
+      void setPrompt(string p);
       inode_ptr getCwd();
       void setCwd(inode_ptr node);
+      inode_ptr getRoot();
 };
 
 // class inode -

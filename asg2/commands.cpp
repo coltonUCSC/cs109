@@ -15,7 +15,7 @@ command_hash cmd_hash {
    {"prompt", fn_prompt},
    {"pwd"   , fn_pwd   },
    {"rm"    , fn_rm    },
-   /* note function rmr absent from table wtf*/
+   {"rmr"   , fn_rmr   },
 };
 
 command_fn find_command_fn (const string& cmd) {
@@ -56,7 +56,12 @@ void fn_cat (inode_state& state, const wordvec& words){
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   state.setCwd(state.getCwd()->getContents()->getNode(words[1]));
+   inode_ptr cwd = state.getCwd();
+   // TODO initial setup fails with this bounds check in
+   // but cd .. in the root directory will seg fault 
+   //if (cwd == state.getRoot())
+   //   return;
+   state.setCwd(cwd->getContents()->getNode(words[1]));
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -115,6 +120,7 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 void fn_prompt (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   state.setPrompt(words[1]);
 }
 
 void fn_pwd (inode_state& state, const wordvec& words){

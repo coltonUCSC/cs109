@@ -35,12 +35,20 @@ inode_state::inode_state() {
 
 const string& inode_state::prompt() { return prompt_; }
 
+void inode_state::setPrompt(string p) { prompt_ = p; }
+
 inode_ptr inode_state::getCwd(){
   return cwd;
 }
 
 void inode_state::setCwd(inode_ptr node){
   cwd = node;
+}
+
+// TODO double check to make sure this does not
+// violate encapsulation rules
+inode_ptr inode_state::getRoot(){
+  return root;
 }
 
 ostream& operator<< (ostream& out, const inode_state& state) {
