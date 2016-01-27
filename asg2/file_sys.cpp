@@ -187,7 +187,10 @@ wordvec directory::getAllPaths(){
 }
 
 inode_ptr directory::getNode(const string& path){
-  return dirents.find(path)->second;
+  auto it = dirents.find(path);
+  if (it == dirents.end())
+    return nullptr;
+  return it->second;
 }
 
 

@@ -48,16 +48,20 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   // We should really consider breaking this up.
-   cout << state.getCwd()->getContents()->getNode(words[1])->getContents()->readfile() << endl;
-
+   for (auto iter = words.begin()+1; iter != words.end(); ++iter){
+      inode_ptr file = state.getCwd()->getContents()->getNode(*iter);
+      if (file == nullptr)
+         printf("Error: file not found\n");
+      else   
+         cout << file->getContents()->readfile() << endl;
+   }
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    inode_ptr cwd = state.getCwd();
-   if (cwd == state.getRoot())
+   if (cwd == state.getRoot() && words[1] == "..")
       return;
    state.setCwd(cwd->getContents()->getNode(words[1]));
 }
