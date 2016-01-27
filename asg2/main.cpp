@@ -56,10 +56,7 @@ int main (int argc, char** argv) {
    slash.push_back("mkdir");
    slash.push_back("/");
    fn_mkdir(state, slash);
-   wordvec cd;
-   cd.push_back("cd");
-   cd.push_back("/");
-   fn_cd(state, cd);
+   state.setCwd(state.getCwd()->getContents()->getNode("/"));
    try {
       for (;;) {
          try {

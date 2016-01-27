@@ -57,10 +57,8 @@ void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    inode_ptr cwd = state.getCwd();
-   // TODO initial setup fails with this bounds check in
-   // but cd .. in the root directory will seg fault 
-   //if (cwd == state.getRoot())
-   //   return;
+   if (cwd == state.getRoot())
+      return;
    state.setCwd(cwd->getContents()->getNode(words[1]));
 }
 
