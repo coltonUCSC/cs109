@@ -126,6 +126,10 @@ inode_ptr plain_file::getNode(const string&){
   throw file_error ("is a plain file");
 }
 
+void plain_file::printMap(){
+  throw file_error ("is a plain file");
+}
+
 size_t directory::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
@@ -192,4 +196,12 @@ inode_ptr directory::getNode(const string& path){
    if (it == dirents.end())
       return nullptr;
    return dirents.find(path)->second;
+}
+
+void directory::printMap(){
+  cout << "Map contents:" << endl;
+  for (auto it = dirents.begin(); it != dirents.end(); ++it){
+    cout << it->first << " -> " << it->second << endl;
+  }
+  cout << endl;
 }
