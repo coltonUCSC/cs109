@@ -14,7 +14,7 @@ using namespace std;
 #include "util.h"
 
 // scan_options
-//    Options analysis:  The only option is -Dflags. 
+//    Options analysis:  The only option is -Dflags.
 
 void scan_options (int argc, char** argv) {
    opterr = 0;
@@ -50,16 +50,15 @@ int main (int argc, char** argv) {
    // Initial shell setup before the primary loop
    // this sets up a "true" root node above the
    // mount point of /.
-   // This ensures the property that each directory inode 
-   // has only subdirectory and file nodes mapped. 
+   // This ensures the property that each directory inode
+   // has only subdirectory and file nodes mapped.
    wordvec slash;
    slash.push_back("mkdir");
    slash.push_back("/");
    fn_mkdir(state, slash);
-   wordvec cd;
-   cd.push_back("cd");
-   cd.push_back("/");
-   fn_cd(state, cd);
+   //state.getCwd()->getContents()->setPath("..",state.getCwd()->getContents()->getNode("/"));
+   state.setCwd(state.getCwd()->getContents()->getNode("/"));
+   //state.getCwd()->getContents()->setPath("..",state.getCwd()->getContents()->getNode("/"));
    try {
       for (;;) {
          try {
@@ -75,7 +74,7 @@ int main (int argc, char** argv) {
                break;
             }
             if (need_echo) cout << line << endl;
-   
+
             // Split the line into words and lookup the appropriate
             // function.  Complain or call it.
             wordvec words = split (line, " \t");
@@ -96,4 +95,3 @@ int main (int argc, char** argv) {
 
    return exit_status_message();
 }
-
