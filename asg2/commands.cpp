@@ -40,7 +40,7 @@ int exit_status_message() {
 }
 
 // TODO modify all functions that can take either relative or
-// full pathnames, if pathname is full (starts with /) then we 
+// full pathnames, if pathname is full (starts with /) then we
 // need to create and call a helper function that would traverse
 // the tree by searching each directory map for the partial string.
 // eg cd /home/colton/dir would need to set cwd to /, then search
@@ -48,22 +48,25 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   for (auto iter = words.begin()+1; iter != words.end(); ++iter){
-      inode_ptr file = state.getCwd()->getContents()->getNode(*iter);
-      if (file == nullptr)
-         printf("Error: file not found\n");
-      else   
-         cout << file->getContents()->readfile() << endl;
-   }
+   // We should really consider breaking this up.
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   cout << res->getContents()->readfile() << endl;
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   inode_ptr cwd = state.getCwd();
-   if (cwd == state.getRoot() && words[1] == "..")
+   inode_ptr ogcwd = state.getCwd();
+   if (words.size() == 1){
+      state.setCwd(state.getRoot()->getContents()->getNode("/"));
       return;
-   state.setCwd(cwd->getContents()->getNode(words[1]));
+   }
+   if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   state.setCwd(res);
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -81,7 +84,12 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   auto pathList = state.getCwd()->getContents()->getAllPaths();
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = ogcwd;
+   if(words.size() > 1)
+      res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   auto pathList = res->getContents()->getAllPaths();
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
@@ -107,15 +115,18 @@ void fn_make (inode_state& state, const wordvec& words){
 void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
    if (words.size() <= 0){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-
+   inode_ptr ogcwd = state.getCwd();
    for (auto it = words.begin()+1; it != words.end(); ++it){
       auto newDir = state.getCwd()->getContents()->mkdir(*it);
-      newDir->getContents()->setPath("..", state.getCwd());
+      newDir->getContents()->setPath("..", ogcwd);
       newDir->getContents()->setPath(".", newDir);
+      //newDir->getContents()->setPath("..", state.getCwd());
+      //newDir->getContents()->setPath(".", newDir);
    }
 }
 
@@ -136,7 +147,7 @@ void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
    for (auto it = words.begin()+1; it != words.end(); ++it){
       state.getCwd()->getContents()->remove(*it);
-   }  
+   }
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
@@ -144,3 +155,19 @@ void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 }
 
+inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
+   wordvec temp = split (path, "/");
+   for(unsigned i=0; i < temp.size(); i++){
+      oldcwd = oldcwd->getContents()->getNode(temp[i]);
+   }
+   return oldcwd;
+}
+
+/*
+inode_ptr search (inode_ptr dir, const string& path){
+   //inode_ptr = dir->find(path);
+   //if !path return;
+   //if path return inode_ptr
+   //search(inode_ptr)
+}
+*/

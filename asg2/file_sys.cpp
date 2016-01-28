@@ -141,11 +141,11 @@ void directory::writefile (const wordvec&) {
 }
 
 // Preconditions:
-// filename is the relative pathname of the parent 
+// filename is the relative pathname of the parent
 // directory of the file or directory to remove.
-// If the filename maps to a directory, there will be no 
+// If the filename maps to a directory, there will be no
 // subdirectories (or files?) inside.  Any recursion logic
-// will be handled by fn_rmr()  
+// will be handled by fn_rmr()
 void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
    dirents.erase(filename);
@@ -155,6 +155,7 @@ inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
    inode_ptr newDir = make_shared<inode>(file_type::DIRECTORY_TYPE);
    dirents.insert(pair<string,inode_ptr>(dirname, newDir));
+
    return newDir;
 }
 
@@ -187,12 +188,8 @@ wordvec directory::getAllPaths(){
 }
 
 inode_ptr directory::getNode(const string& path){
-  auto it = dirents.find(path);
-  if (it == dirents.end())
-    return nullptr;
-  return it->second;
+   auto it = dirents.find(path);
+   if (it == dirents.end())
+      return nullptr;
+   return dirents.find(path)->second;
 }
-
-
-
-
