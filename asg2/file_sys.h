@@ -58,7 +58,7 @@ class inode_state {
 //    number of dirents.  For a text file, the number of characters
 //    when printed (the sum of the lengths of each word, plus the
 //    number of words.
-//    
+//
 
 class inode {
    friend class inode_state;
@@ -138,7 +138,7 @@ class plain_file: public base_file {
 //    does not exist, or the subdirectory is not empty.
 //    Here empty means the only entries are dot (.) and dotdot (..).
 // mkdir -
-//    Creates a new directory under the current directory and 
+//    Creates a new directory under the current directory and
 //    immediately adds the directories dot (.) and dotdot (..) to it.
 //    Note that the parent (..) of / is / itself.  It is an error
 //    if the entry already exists.
@@ -161,7 +161,7 @@ class directory: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
+      //inode_ptr find(const string& path);
 };
 
 #endif
-

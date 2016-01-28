@@ -40,7 +40,7 @@ int exit_status_message() {
 }
 
 // TODO modify all functions that can take either relative or
-// full pathnames, if pathname is full (starts with /) then we 
+// full pathnames, if pathname is full (starts with /) then we
 // need to create and call a helper function that would traverse
 // the tree by searching each directory map for the partial string.
 // eg cd /home/colton/dir would need to set cwd to /, then search
@@ -59,7 +59,9 @@ void fn_cd (inode_state& state, const wordvec& words){
    inode_ptr cwd = state.getCwd();
    if (cwd == state.getRoot())
       return;
-   state.setCwd(cwd->getContents()->getNode(words[1]));
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+
+   state.setCwd(res);
 }
 
 void fn_echo (inode_state& state, const wordvec& words){
@@ -132,7 +134,7 @@ void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
    for (auto it = words.begin()+1; it != words.end(); ++it){
       state.getCwd()->getContents()->remove(*it);
-   }  
+   }
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
@@ -140,3 +142,19 @@ void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 }
 
+inode_ptr resolvePath (const string& path, inode_ptr cwd){
+   wordvec temp = split (path, "/");
+   for(unsigned i=0; i < temp.size(); i++){
+      cwd = cwd->getContents()->getNode(temp[i]);
+   }
+   return cwd;
+}
+
+/*
+inode_ptr search (inode_ptr dir, const string& path){
+   //inode_ptr = dir->find(path);
+   //if !path return;
+   //if path return inode_ptr
+   //search(inode_ptr)
+}
+*/
