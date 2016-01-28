@@ -155,6 +155,7 @@ inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
    inode_ptr newDir = make_shared<inode>(file_type::DIRECTORY_TYPE);
    dirents.insert(pair<string,inode_ptr>(dirname, newDir));
+
    return newDir;
 }
 

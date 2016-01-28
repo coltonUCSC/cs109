@@ -49,18 +49,23 @@ void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
    // We should really consider breaking this up.
-   cout << state.getCwd()->getContents()->getNode(words[1])->getContents()->readfile() << endl;
-
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   cout << res->getContents()->readfile() << endl;
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   inode_ptr cwd = state.getCwd();
-   if (cwd == state.getRoot())
+   inode_ptr ogcwd = state.getCwd();
+   if (words.size() == 1){
+      state.setCwd(state.getRoot()->getContents()->getNode("/"));
       return;
+   }
+   if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
    inode_ptr res = resolvePath(words[1], state.getCwd());
-
+   if (res == nullptr) return;
    state.setCwd(res);
 }
 
@@ -79,7 +84,12 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   auto pathList = state.getCwd()->getContents()->getAllPaths();
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = ogcwd;
+   if(words.size() > 1)
+      res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   auto pathList = res->getContents()->getAllPaths();
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
@@ -105,15 +115,18 @@ void fn_make (inode_state& state, const wordvec& words){
 void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
    if (words.size() <= 0){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-
+   inode_ptr ogcwd = state.getCwd();
    for (auto it = words.begin()+1; it != words.end(); ++it){
       auto newDir = state.getCwd()->getContents()->mkdir(*it);
-      newDir->getContents()->setPath("..", state.getCwd());
+      newDir->getContents()->setPath("..", ogcwd);
       newDir->getContents()->setPath(".", newDir);
+      //newDir->getContents()->setPath("..", state.getCwd());
+      //newDir->getContents()->setPath(".", newDir);
    }
 }
 
@@ -142,12 +155,12 @@ void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 }
 
-inode_ptr resolvePath (const string& path, inode_ptr cwd){
+inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");
    for(unsigned i=0; i < temp.size(); i++){
-      cwd = cwd->getContents()->getNode(temp[i]);
+      oldcwd = oldcwd->getContents()->getNode(temp[i]);
    }
-   return cwd;
+   return oldcwd;
 }
 
 /*
