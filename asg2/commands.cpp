@@ -2,6 +2,7 @@
 
 #include "commands.h"
 #include "debug.h"
+#include <stack>
 
 command_hash cmd_hash {
    {"cat"   , fn_cat   },
@@ -87,16 +88,54 @@ void fn_ls (inode_state& state, const wordvec& words){
    inode_ptr res = ogcwd;
    if(words.size() > 1)
       res = resolvePath(words[1], state.getCwd());
-   if (res == nullptr) return; //error here
+   if (res == nullptr) return;
    auto pathList = res->getContents()->getAllPaths();
+   state.setCwd(res);
+   fn_pwd(state, words);
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
+   state.setCwd(ogcwd);
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr newCwd = ogcwd;
+   if (words.size() > 0){
+      newCwd = resolvePath(words[1], state.getCwd());
+      state.setCwd(newCwd);
+   }
+   auto pathList = newCwd->getContents()->getAllDirs();
+   wordvec ls {"ls"};
+   fn_ls(state, ls);
+   for(int i = 0; i < pathList.size(); i++){
+      DFS(pathList[i], state);
+   }
+   state.setCwd(ogcwd);
+}
+
+void DFS(string s, inode_state& state){
+   wordvec newLs {"ls", s};
+   fn_ls(state, newLs);
+   auto dirList = state.getCwd()->getContents()->getAllDirs();
+   if (dirList.size() == 0)
+      return;
+   map<string, int> disc;
+   for (int i = 0; i < dirList.size(); i++){
+      disc[dirList[i]] = 0;
+   }
+   for (auto it = disc.begin(); it != disc.end(); ++it){
+      if (it->second == 0){
+     	disc[it->first] = 1;
+     	inode_ptr ogcwd = state.getCwd();
+     	state.setCwd(state.getCwd()->getContents()->getNode(it->first));
+     	DFS(it->first, state);
+     	state.setCwd(ogcwd);
+      }
+ 	}
 }
 
 void fn_make (inode_state& state, const wordvec& words){
@@ -106,7 +145,6 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-
    wordvec newData(words.begin()+2, words.end());
 
    wordvec pathvec = split (words[1], "/");
@@ -135,6 +173,7 @@ void fn_make (inode_state& state, const wordvec& words){
 void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
    if (words.size() <= 0){
       cout << "mkdir: missing operand" << endl;
       return;
