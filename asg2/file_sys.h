@@ -104,6 +104,8 @@ class base_file {
       virtual wordvec getAllPaths() = 0;
       virtual inode_ptr getNode(const string& path) = 0;
       virtual void printMap() = 0;
+      virtual string getPwd() = 0;
+      virtual void setPwd(string newPwd) = 0;
 };
 
 // class plain_file -
@@ -130,6 +132,8 @@ class plain_file: public base_file {
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
       virtual void printMap() override;
+      virtual string getPwd() override;
+      virtual void setPwd(string newPwd) override;
 };
 
 // class directory -
@@ -154,6 +158,7 @@ class directory: public base_file {
    private:
       // Must be a map, not unordered_map, so printing is lexicographic
       map<string,inode_ptr> dirents;
+      string fullPath;
    public:
       virtual size_t size() const override;
       virtual const wordvec& readfile() const override;
@@ -166,8 +171,8 @@ class directory: public base_file {
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
       virtual void printMap() override;
-
-      //inode_ptr find(const string& path);
+      virtual string getPwd() override;
+      virtual void setPwd(string newPwd) override;
 };
 
 #endif

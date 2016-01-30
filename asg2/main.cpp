@@ -52,18 +52,11 @@ int main (int argc, char** argv) {
    // mount point of /.
    // This ensures the property that each directory inode
    // has only subdirectory and file nodes mapped.
-
    wordvec slash {"mkdir", "/"};
-
    fn_mkdir(state, slash);
-   //state.getCwd()->getContents()->setPath("..",state.getCwd()->getContents()->getNode("/"));
    state.setCwd(state.getCwd()->getContents()->getNode("/"));
-
-   //state.getCwd()->getContents()->setPath("..",state.getCwd()->getContents()->getNode("/"));
-
    state.getCwd()->getContents()->remove("..");
    state.getCwd()->getContents()->setPath("..",state.getCwd());
-
    try {
       for (;;) {
          try {

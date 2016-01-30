@@ -62,7 +62,6 @@ inode::inode(file_type type): inode_nr (next_inode_nr++) {
       case file_type::PLAIN_TYPE:
            contents = make_shared<plain_file>();
            isDir = false;
-           cout << isDir << endl;
            break;
       case file_type::DIRECTORY_TYPE:
            contents = make_shared<directory>();
@@ -133,6 +132,14 @@ void plain_file::printMap(){
   throw file_error ("is a plain file");
 }
 
+string plain_file::getPwd(){
+  throw file_error ("is a plain file");
+}
+
+void plain_file::setPwd(string){
+  throw file_error ("is a plain file");
+}
+
 size_t directory::size() const {
    size_t size {0};
    DEBUGF ('i', "size = " << size);
@@ -162,7 +169,7 @@ inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
    inode_ptr newDir = make_shared<inode>(file_type::DIRECTORY_TYPE);
    dirents.insert(pair<string,inode_ptr>(dirname, newDir));
-
+   newDir->getContents()->setPwd(fullPath + "/" + dirname);
    return newDir;
 }
 
@@ -201,11 +208,18 @@ inode_ptr directory::getNode(const string& path){
    return dirents.find(path)->second;
 }
 
-
 void directory::printMap(){
   cout << "Map contents:" << endl;
   for (auto it = dirents.begin(); it != dirents.end(); ++it){
     cout << it->first << " -> " << it->second << endl;
   }
   cout << endl;
+}
+
+string directory::getPwd(){
+  return fullPath;
+}
+
+void directory::setPwd(string newPwd){
+  fullPath = newPwd;
 }
