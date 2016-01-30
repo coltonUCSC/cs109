@@ -124,6 +124,10 @@ wordvec plain_file::getAllPaths(){
   throw file_error ("is a plain file");
 }
 
+wordvec plain_file::getAllDirs(){
+  throw file_error ("is a plain file");
+}
+
 inode_ptr plain_file::getNode(const string&){
   throw file_error ("is a plain file");
 }
@@ -199,6 +203,15 @@ wordvec directory::getAllPaths(){
     pathList.push_back(iter->first);
   }
   return pathList;
+}
+
+wordvec directory::getAllDirs(){
+  wordvec dirList;
+  for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
+    if ((iter->second->isDirectory()) && (iter->first != ".") && (iter->first != ".."))
+      dirList.push_back(iter->first);
+  }
+  return dirList;
 }
 
 inode_ptr directory::getNode(const string& path){

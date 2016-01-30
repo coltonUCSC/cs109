@@ -25,6 +25,7 @@ class command_error: public runtime_error {
 
 
 inode_ptr resolvePath (const string&, inode_ptr);
+void DFS(string s, inode_state& state);
 // execution functions -
 
 void fn_cat    (inode_state& state, const wordvec& words);

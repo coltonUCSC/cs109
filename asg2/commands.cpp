@@ -62,7 +62,7 @@ void fn_cd (inode_state& state, const wordvec& words){
    if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
-   if (res->isDirectory()) return;
+   if (!res->isDirectory()) return;
    state.setCwd(res);
 }
 
@@ -87,9 +87,12 @@ void fn_ls (inode_state& state, const wordvec& words){
       res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
    auto pathList = res->getContents()->getAllPaths();
+   state.setCwd(res);
+   fn_pwd(state, words);
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
+   state.setCwd(ogcwd);
 }
 
 void fn_lsr (inode_state& state, const wordvec& words){
@@ -97,36 +100,39 @@ void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', words);
 
    inode_ptr ogcwd = state.getCwd();
-   inode_ptr newCwd = resolvePath(words[1], state.getCwd());
-   auto pathList = newCwd->getContents()->getAllPaths();
-   for(int i = 0; i < pathList.size(), i++){
-      DFS(s, newCwd);
+   inode_ptr newCwd = ogcwd;
+   if (words.size() > 0){
+      newCwd = resolvePath(words[1], state.getCwd());
+      state.setCwd(newCwd);
    }
-   /*inode_ptr newCwd = resolvePath(words[1], state.getCwd());
-   s.push(newCwd->getContents()->getPath(newCwd));
-   while (!s.empty()){
-      string v = s.pop();
-      auto pathList = newCwd->getContents()->getAllPaths();
-      map<string, int> disc;
-
-   }*/
+   auto pathList = newCwd->getContents()->getAllDirs();
+   wordvec ls {"ls"};
+   fn_ls(state, ls);
+   for(int i = 0; i < pathList.size(); i++){
+      DFS(pathList[i], state);
+   }
+   state.setCwd(ogcwd);
 }
 
-void DFS(string s, inode_ptr cwd){
-   inode_ptr nextDir = cwd->getContents()->getNode(s);
-   if (nextDir == nullptr)
+void DFS(string s, inode_state& state){
+   wordvec newLs {"ls", s};
+   fn_ls(state, newLs);
+   auto dirList = state.getCwd()->getContents()->getAllDirs();
+   if (dirList.size() == 0)
       return;
-   auto pathList = nextDir->getContents()->getAllPaths();
    map<string, int> disc;
-   for (int i = 0; i < pathList.size(); i++){
-      map[pathList[i]] = 0;
+   for (int i = 0; i < dirList.size(); i++){
+      disc[dirList[i]] = 0;
    }
-   for (auto it = map.begin(); it != map.end(); ++it){
+   for (auto it = disc.begin(); it != disc.end(); ++it){
       if (it->second == 0){
-      	map[it->first] = 1;
-         DFS(it->first, nextDir->getContents->getNode(it->first))
+     	disc[it->first] = 1;
+     	inode_ptr ogcwd = state.getCwd();
+     	state.setCwd(state.getCwd()->getContents()->getNode(it->first));
+     	DFS(it->first, state);
+     	state.setCwd(ogcwd);
       }
-   }
+ 	}
 }
 
 void fn_make (inode_state& state, const wordvec& words){
@@ -144,7 +150,6 @@ void fn_make (inode_state& state, const wordvec& words){
       } else { return; /* error here */ }
    }
    inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
-   //wordvec newData(words.begin()+2, words.end());
    newFile->getContents()->writefile(newData);
 }
 
