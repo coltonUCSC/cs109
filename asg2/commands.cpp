@@ -2,6 +2,7 @@
 
 #include "commands.h"
 #include "debug.h"
+#include <stack>
 
 command_hash cmd_hash {
    {"cat"   , fn_cat   },
@@ -94,6 +95,38 @@ void fn_ls (inode_state& state, const wordvec& words){
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr newCwd = resolvePath(words[1], state.getCwd());
+   auto pathList = newCwd->getContents()->getAllPaths();
+   for(int i = 0; i < pathList.size(), i++){
+      DFS(s, newCwd);
+   }
+   /*inode_ptr newCwd = resolvePath(words[1], state.getCwd());
+   s.push(newCwd->getContents()->getPath(newCwd));
+   while (!s.empty()){
+      string v = s.pop();
+      auto pathList = newCwd->getContents()->getAllPaths();
+      map<string, int> disc;
+
+   }*/
+}
+
+void DFS(string s, inode_ptr cwd){
+   inode_ptr nextDir = cwd->getContents()->getNode(s);
+   if (nextDir == nullptr)
+      return;
+   auto pathList = nextDir->getContents()->getAllPaths();
+   map<string, int> disc;
+   for (int i = 0; i < pathList.size(); i++){
+      map[pathList[i]] = 0;
+   }
+   for (auto it = map.begin(); it != map.end(); ++it){
+      if (it->second == 0){
+      	map[it->first] = 1;
+         DFS(it->first, nextDir->getContents->getNode(it->first))
+      }
+   }
 }
 
 void fn_make (inode_state& state, const wordvec& words){
