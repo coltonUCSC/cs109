@@ -45,7 +45,7 @@ void fn_cat (inode_state& state, const wordvec& words){
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
-   if (res->isDirectory()) return; //error here                                                       
+   if (res->isDirectory()) return; //error here
    cout << res->getContents()->readfile() << endl;
 }
 
@@ -61,7 +61,7 @@ void fn_cd (inode_state& state, const wordvec& words){
    if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
-   if (res->isDirectory()) return;
+   if (!res->isDirectory()) return;
    state.setCwd(res);
 }
 
@@ -106,15 +106,24 @@ void fn_make (inode_state& state, const wordvec& words){
 
    wordvec newData(words.begin()+2, words.end());
 
-   inode_ptr res = resolvePath(words[1], state.getCwd())
-   if (res != nullptr) {
-      if(res->getContents()->getNode(words[1])->isDirectory())
+   wordvec pathvec = split (words[1], "/");
+   string fullpath = "";
+   string filename = *(pathvec.end()-1);
+   for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
+      fullpath += (*it + "/");
+   inode_ptr res = resolvePath(fullpath, state.getCwd()); //resulting path before filename
+   if (res == nullptr) return;
+   inode_ptr file = res->getContents()->getNode(filename); //search directory for filename if existing
+   if (file != nullptr && res != nullptr) {
+      if(file->isDirectory()) //getContents()->getNode(words[1])
          return;
-      res->getContents()->getNode(words[1])->getContents()->writefile(words[1);
+      file->getContents()->writefile(newData);
       return;
    }
-   inode_ptr ogcwd = state.getCwd();
+   res->getContents()->mkfile(filename);
+   res->getContents()->getNode(filename)->getContents()->writefile(newData);
 
+   inode_ptr ogcwd = state.getCwd();
    //inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
    //wordvec newData(words.begin()+2, words.end());
    //newFile->getContents()->writefile(newData);
@@ -170,9 +179,11 @@ void fn_rmr (inode_state& state, const wordvec& words){
 
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");
+
    for(unsigned i=0; i < temp.size(); i++){
-      if (!oldcwd->getContents()->getNode(temp[i])->isDirectory())
-         return;
+      //if (!oldcwd->getContents()->getNode(temp[i])->isDirectory())
+         //return;
+      if (oldcwd == nullptr) return nullptr  ;
       oldcwd = oldcwd->getContents()->getNode(temp[i]);
    }
    return oldcwd;
