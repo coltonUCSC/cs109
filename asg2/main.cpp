@@ -53,8 +53,10 @@ int main (int argc, char** argv) {
    // This ensures the property that each directory inode
    // has only subdirectory and file nodes mapped.
    wordvec slash {"mkdir", "/"};
+
    fn_mkdir(state, slash);
    state.setCwd(state.getCwd()->getContents()->getNode("/"));
+
    state.getCwd()->getContents()->remove("..");
    state.getCwd()->getContents()->setPath("..",state.getCwd());
    try {
