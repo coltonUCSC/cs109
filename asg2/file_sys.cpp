@@ -61,9 +61,11 @@ inode::inode(file_type type): inode_nr (next_inode_nr++) {
    switch (type) {
       case file_type::PLAIN_TYPE:
            contents = make_shared<plain_file>();
+           isDir = false;
            break;
       case file_type::DIRECTORY_TYPE:
            contents = make_shared<directory>();
+           isDir = true;
            break;
    }
    DEBUGF ('i', "inode " << inode_nr << ", type = " << type);

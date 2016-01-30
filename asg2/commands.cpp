@@ -45,6 +45,7 @@ void fn_cat (inode_state& state, const wordvec& words){
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
+   if (res->isDirectory()) return; //error here                                                       
    cout << res->getContents()->readfile() << endl;
 }
 
@@ -56,9 +57,11 @@ void fn_cd (inode_state& state, const wordvec& words){
       state.setCwd(state.getRoot()->getContents()->getNode("/"));
       return;
    }
+   if (words.size() > 2) return;
    if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
+   if (res->isDirectory()) return;
    state.setCwd(res);
 }
 

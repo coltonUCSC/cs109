@@ -63,10 +63,12 @@ class inode_state {
 class inode {
    friend class inode_state;
    private:
+      bool isDir;
       static int next_inode_nr;
       int inode_nr;
       base_file_ptr contents;
    public:
+      bool isDirectory() { return isDir; }
       inode (file_type);
       int get_inode_nr() const;
       base_file_ptr getContents();
