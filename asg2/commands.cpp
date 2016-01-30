@@ -198,6 +198,7 @@ void fn_rmr (inode_state& state, const wordvec& words){
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");
    for(unsigned i=0; i < temp.size(); i++){
+   	  if (oldcwd == nullptr) return nullptr;
       oldcwd = oldcwd->getContents()->getNode(temp[i]);
    }
    return oldcwd;
