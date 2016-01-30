@@ -101,6 +101,7 @@ class base_file {
       virtual string getPath(inode_ptr node) = 0;
       virtual wordvec getAllPaths() = 0;
       virtual inode_ptr getNode(const string& path) = 0;
+      virtual void printMap() = 0;
 };
 
 // class plain_file -
@@ -126,6 +127,7 @@ class plain_file: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
+      virtual void printMap() override;
 };
 
 // class directory -
@@ -161,6 +163,10 @@ class directory: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
+<<<<<<< HEAD
+=======
+      virtual void printMap() override;
+>>>>>>> 0193ea60ee5ab330cdc49391920c988540df178f
       //inode_ptr find(const string& path);
 };
 
