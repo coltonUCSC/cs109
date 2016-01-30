@@ -52,6 +52,7 @@ void fn_cat (inode_state& state, const wordvec& words){
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
+   if (res->isDirectory()) return; //error here
    cout << res->getContents()->readfile() << endl;
 }
 
@@ -63,9 +64,11 @@ void fn_cd (inode_state& state, const wordvec& words){
       state.setCwd(state.getRoot()->getContents()->getNode("/"));
       return;
    }
+   if (words.size() > 2) return;
    if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
+   if (res->isDirectory()) return;
    state.setCwd(res);
 }
 
@@ -107,8 +110,15 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
-   inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
    wordvec newData(words.begin()+2, words.end());
+   if (state.getCwd()->getContents()->getNode(words[1]) != nullptr){
+      if (!state.getCwd()->getContents()->getNode(words[1])->isDirectory()){
+         state.getCwd()->getContents()->getNode(words[1])->getContents()->writefile(newData);
+         return;
+      } else { return; /* error here */ }
+   }
+   inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
+   //wordvec newData(words.begin()+2, words.end());
    newFile->getContents()->writefile(newData);
 }
 

@@ -61,9 +61,12 @@ inode::inode(file_type type): inode_nr (next_inode_nr++) {
    switch (type) {
       case file_type::PLAIN_TYPE:
            contents = make_shared<plain_file>();
+           isDir = false;
+           cout << isDir << endl;
            break;
       case file_type::DIRECTORY_TYPE:
            contents = make_shared<directory>();
+           isDir = true;
            break;
    }
    DEBUGF ('i', "inode " << inode_nr << ", type = " << type);
@@ -197,8 +200,7 @@ inode_ptr directory::getNode(const string& path){
       return nullptr;
    return dirents.find(path)->second;
 }
-<<<<<<< HEAD
-=======
+
 
 void directory::printMap(){
   cout << "Map contents:" << endl;
@@ -207,4 +209,3 @@ void directory::printMap(){
   }
   cout << endl;
 }
->>>>>>> 0193ea60ee5ab330cdc49391920c988540df178f

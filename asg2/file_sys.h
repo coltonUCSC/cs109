@@ -63,10 +63,12 @@ class inode_state {
 class inode {
    friend class inode_state;
    private:
+      bool isDir;
       static int next_inode_nr;
       int inode_nr;
       base_file_ptr contents;
    public:
+      bool isDirectory() { return isDir; }
       inode (file_type);
       int get_inode_nr() const;
       base_file_ptr getContents();
@@ -163,10 +165,8 @@ class directory: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual inode_ptr getNode(const string& path) override;
-<<<<<<< HEAD
-=======
       virtual void printMap() override;
->>>>>>> 0193ea60ee5ab330cdc49391920c988540df178f
+
       //inode_ptr find(const string& path);
 };
 
