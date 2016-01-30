@@ -42,9 +42,12 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   string filename = *(words.end()-1);
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
-   if (res == nullptr) return;
+   if (res == nullptr){
+      throw command_error ("cat: " + filename + ": file does not exist");
+      return; }
    if (res->isDirectory()) return; //error here
    cout << res->getContents()->readfile() << endl;
 }
