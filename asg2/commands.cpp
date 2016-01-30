@@ -193,14 +193,29 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   if (words.size() <= 0) return; //error here?
    wordvec pathvec = split(words[1],"/");
    string fullpath = "";
+   string name = *(pathvec.end()-1);
    for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
       fullpath += (*it + "/");
-   
+   inode_ptr res = resolvePath(fullpath,state.getCwd());
+   if (res == nullptr) return; //error
+   inode_ptr rmfile = res->getContents()->getNode(name);
+   if (res != nullptr && rmfile != nullptr){
+      if(rmfile->isDirectory()){
+         if(rmfile->getContents()->getAllPaths().size() <= 2){
+            res->getContents()->remove(name);
+            return;
+         } else { return; /* not empty */ }}
+         res->getContents()->remove(name);
+         return;
+   }
+   /*
    for (auto it = words.begin()+1; it != words.end(); ++it){
       state.getCwd()->getContents()->remove(*it);
    }
+   */
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
