@@ -39,16 +39,9 @@ int exit_status_message() {
    return exit_status;
 }
 
-// TODO modify all functions that can take either relative or
-// full pathnames, if pathname is full (starts with /) then we
-// need to create and call a helper function that would traverse
-// the tree by searching each directory map for the partial string.
-// eg cd /home/colton/dir would need to set cwd to /, then search
-// the directory map for the next node (home).
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   // We should really consider breaking this up.
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr) return;
@@ -125,8 +118,6 @@ void fn_mkdir (inode_state& state, const wordvec& words){
       auto newDir = state.getCwd()->getContents()->mkdir(*it);
       newDir->getContents()->setPath("..", ogcwd);
       newDir->getContents()->setPath(".", newDir);
-      //newDir->getContents()->setPath("..", state.getCwd());
-      //newDir->getContents()->setPath(".", newDir);
    }
 }
 
@@ -139,7 +130,13 @@ void fn_prompt (inode_state& state, const wordvec& words){
 void fn_pwd (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   cout << state.getCwd()->getContents()->getPath(state.getCwd()) << endl;
+   string pwd = state.getCwd()->getContents()->getPwd();
+   if (pwd.length() == 2){
+      cout << "/" << endl;
+   } else {
+      pwd = pwd.substr(2, pwd.length()-2);
+      cout << pwd << endl;
+   }
 }
 
 void fn_rm (inode_state& state, const wordvec& words){
