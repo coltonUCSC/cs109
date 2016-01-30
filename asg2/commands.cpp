@@ -103,22 +103,28 @@ void fn_make (inode_state& state, const wordvec& words){
       cout << "mkdir: missing operand" << endl;
       return;
    }
+
    wordvec newData(words.begin()+2, words.end());
-   if (state.getCwd()->getContents()->getNode(words[1]) != nullptr){
-      if (!state.getCwd()->getContents()->getNode(words[1])->isDirectory()){
-         state.getCwd()->getContents()->getNode(words[1])->getContents()->writefile(newData);
+
+   inode_ptr res = resolvePath(words[1], state.getCwd())
+   if (res != nullptr) {
+      if(res->getContents()->getNode(words[1])->isDirectory())
          return;
-      } else { return; /* error here */ }
+      res->getContents()->getNode(words[1])->getContents()->writefile(words[1);
+      return;
    }
-   inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
+   inode_ptr ogcwd = state.getCwd();
+
+   //inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
    //wordvec newData(words.begin()+2, words.end());
-   newFile->getContents()->writefile(newData);
+   //newFile->getContents()->writefile(newData);
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-
+   if (state.getCwd()->getContents()->getNode(words[1]) != nullptr)
+      return;
    if (words.size() <= 0){
       cout << "mkdir: missing operand" << endl;
       return;
@@ -165,6 +171,8 @@ void fn_rmr (inode_state& state, const wordvec& words){
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");
    for(unsigned i=0; i < temp.size(); i++){
+      if (!oldcwd->getContents()->getNode(temp[i])->isDirectory())
+         return;
       oldcwd = oldcwd->getContents()->getNode(temp[i]);
    }
    return oldcwd;
