@@ -98,10 +98,24 @@ void fn_ls (inode_state& state, const wordvec& words){
    state.setCwd(ogcwd);
 }
 
+void DFS(inode_ptr node) {
+   auto dirs = node->getContents()->getAllDirs();
+   auto all = node->getContents()->getAllPaths();
+   for (auto it = all.begin(); it != all.end(); ++it)
+      cout << *it << endl;
+   for (auto it = dirs.begin(); it != dirs.end(); ++it){
+      DFS(node->getContents()->getNode(*it));
+   }
+}
+
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   //fn_ls (state, words);
+   DFS(res);
+   /*
    inode_ptr ogcwd = state.getCwd();
    inode_ptr newCwd = ogcwd;
    if (words.size() > 0){
@@ -115,8 +129,10 @@ void fn_lsr (inode_state& state, const wordvec& words){
       DFS(pathList[i], state);
    }
    state.setCwd(ogcwd);
+   */
 }
 
+/*
 void DFS(string s, inode_state& state){
    wordvec newLs {"ls", s};
    fn_ls(state, newLs);
@@ -137,6 +153,7 @@ void DFS(string s, inode_state& state){
       }
  	}
 }
+*/
 
 void fn_make (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
@@ -284,7 +301,6 @@ void DFSr(inode_ptr node){
       node->getContents()->remove(*it);
    }
 }
-
 
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");

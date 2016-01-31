@@ -29,6 +29,7 @@ void DFS(string s, inode_state& state);
 //void DFSr(inode_state& state);
 // execution functions -
 void DFSr (inode_ptr);
+void DFS (inode_ptr);
 
 void fn_cat    (inode_state& state, const wordvec& words);
 void fn_cd     (inode_state& state, const wordvec& words);
