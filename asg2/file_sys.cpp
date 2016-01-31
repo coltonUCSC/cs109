@@ -161,6 +161,19 @@ void directory::writefile (const wordvec&) {
    throw file_error ("is a directory");
 }
 
+int plain_file::getsize() {
+   int count;
+   for(auto it = data.begin(); it != data.end(); ++it)
+      count += (*it).length();
+   return count;
+}
+
+int directory::getsize() {
+   auto paths = this->getAllPaths();
+   return paths.size();
+}
+
+
 // Preconditions:
 // filename is the relative pathname of the parent
 // directory of the file or directory to remove.

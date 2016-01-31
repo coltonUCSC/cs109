@@ -67,7 +67,7 @@ class inode {
       static int next_inode_nr;
       int inode_nr;
       base_file_ptr contents;
-      static int size;
+      int size;
    public:
       bool isDirectory() { return isDir; }
       inode (file_type);
@@ -94,6 +94,7 @@ class base_file {
       base_file& operator= (base_file&&) = delete;
    public:
       virtual ~base_file() = default;
+      virtual int getsize() = 0;
       virtual size_t size() const = 0;
       virtual const wordvec& readfile() const = 0;
       virtual void writefile (const wordvec& newdata) = 0;
@@ -124,6 +125,7 @@ class plain_file: public base_file {
    private:
       wordvec data;
    public:
+      virtual int getsize()  override;
       virtual size_t size() const override;
       virtual const wordvec& readfile() const override;
       virtual void writefile (const wordvec& newdata) override;
@@ -165,7 +167,7 @@ class directory: public base_file {
       map<string,inode_ptr> dirents;
       string fullPath;
    public:
-
+      virtual int getsize()  override;
       virtual size_t size() const override;
       virtual const wordvec& readfile() const override;
       virtual void writefile (const wordvec& newdata) override;
