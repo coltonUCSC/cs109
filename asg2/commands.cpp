@@ -84,6 +84,9 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   cout << "ls called, words = " << words << endl;
+   cout << "map before path resolution:" << endl;
+   state.getCwd()->getContents()->printMap();
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = ogcwd;
    if(words.size() > 1)
@@ -91,6 +94,8 @@ void fn_ls (inode_state& state, const wordvec& words){
    if (res == nullptr) return;
    auto pathList = res->getContents()->getAllPaths();
    state.setCwd(res);
+   cout << "map after path resolution:" << endl;
+   state.getCwd()->getContents()->printMap();
    fn_pwd(state, words);
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
@@ -98,44 +103,23 @@ void fn_ls (inode_state& state, const wordvec& words){
    state.setCwd(ogcwd);
 }
 
+void DFS(inode_ptr node) {
+   auto dirs = node->getContents()->getAllDirs();
+   auto all = node->getContents()->getAllPaths();
+   for (auto it = all.begin(); it != all.end(); ++it)
+      cout << *it << endl;
+   for (auto it = dirs.begin(); it != dirs.end(); ++it){
+      DFS(node->getContents()->getNode(*it));
+   }
+}
+
 void fn_lsr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-
-   inode_ptr ogcwd = state.getCwd();
-   inode_ptr newCwd = ogcwd;
-   if (words.size() > 0){
-      newCwd = resolvePath(words[1], state.getCwd());
-      state.setCwd(newCwd);
-   }
-   auto pathList = newCwd->getContents()->getAllDirs();
-   wordvec ls {"ls"};
-   fn_ls(state, ls);
-   for(int i = 0; i < pathList.size(); i++){
-      DFS(pathList[i], state);
-   }
-   state.setCwd(ogcwd);
-}
-
-void DFS(string s, inode_state& state){
-   wordvec newLs {"ls", s};
-   fn_ls(state, newLs);
-   auto dirList = state.getCwd()->getContents()->getAllDirs();
-   if (dirList.size() == 0)
-      return;
-   map<string, int> disc;
-   for (int i = 0; i < dirList.size(); i++){
-      disc[dirList[i]] = 0;
-   }
-   for (auto it = disc.begin(); it != disc.end(); ++it){
-      if (it->second == 0){
-     	disc[it->first] = 1;
-     	inode_ptr ogcwd = state.getCwd();
-     	state.setCwd(state.getCwd()->getContents()->getNode(it->first));
-     	DFS(it->first, state);
-     	state.setCwd(ogcwd);
-      }
- 	}
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   //fn_ls (state, words);
+   DFS(res);
 }
 
 void fn_make (inode_state& state, const wordvec& words){
@@ -156,7 +140,7 @@ void fn_make (inode_state& state, const wordvec& words){
    if (res == nullptr) return;
    inode_ptr file = res->getContents()->getNode(filename); //search directory for filename if existing
    if (file != nullptr && res != nullptr) {
-      if(file->isDirectory()) //getContents()->getNode(words[1])
+      if(file->isDirectory())
          return;
       file->getContents()->writefile(newData);
       return;
@@ -165,9 +149,6 @@ void fn_make (inode_state& state, const wordvec& words){
    res->getContents()->getNode(filename)->getContents()->writefile(newData);
 
    inode_ptr ogcwd = state.getCwd();
-   //inode_ptr newFile = state.getCwd()->getContents()->mkfile(words[1]);
-   //wordvec newData(words.begin()+2, words.end());
-   //newFile->getContents()->writefile(newData);
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
@@ -201,17 +182,6 @@ void fn_mkdir (inode_state& state, const wordvec& words){
    inode_ptr dir = res->getContents()->mkdir(dirname);
    dir->getContents()->setPath("..", res);
    dir->getContents()->setPath(".",res->getContents()->getNode(dirname));
-
-   /*if (state.getCwd()->getContents()->getNode(filename) != nullptr)
-      return; */
-   /*
-   inode_ptr ogcwd = state.getCwd();
-   for (auto it = words.begin()+1; it != words.end(); ++it){
-      auto newDir = state.getCwd()->getContents()->mkdir(*it);
-      newDir->getContents()->setPath("..", ogcwd);
-      newDir->getContents()->setPath(".", newDir);
-   }
-   */
 }
 
 void fn_prompt (inode_state& state, const wordvec& words){
@@ -263,6 +233,26 @@ void fn_rm (inode_state& state, const wordvec& words){
 void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   DFSr(res);
+   fn_rm(state, words);
+}
+
+//recursive call, call until the deepest directoy has no more directories
+//begin deleting its contents, function returns and is then continued from
+//its parents call, begin deleting its children and so on...
+//sudo depth?
+void DFSr(inode_ptr node){
+   auto dirs = node->getContents()->getAllDirs();
+   auto files = node->getContents()->getAllFiles();
+   for (auto it = dirs.begin(); it != dirs.end(); ++it){
+      DFSr(node->getContents()->getNode(*it));
+   }
+   for (auto it = files.begin(); it != files.end(); ++it){
+      node->getContents()->remove(*it);
+   }
 }
 
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
