@@ -222,7 +222,7 @@ wordvec directory::getAllFiles(){
    for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
       if (iter->first != "." && iter->first != ".."){
          fileList.push_back(iter->first);
-         cout << iter->first << endl;
+         //cout << iter->first << endl;
       }
 
    }
