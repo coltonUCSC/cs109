@@ -84,9 +84,6 @@ void fn_exit (inode_state& state, const wordvec& words){
 void fn_ls (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
-   cout << "ls called, words = " << words << endl;
-   cout << "map before path resolution:" << endl;
-   state.getCwd()->getContents()->printMap();
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = ogcwd;
    if(words.size() > 1)
@@ -94,8 +91,6 @@ void fn_ls (inode_state& state, const wordvec& words){
    if (res == nullptr) return;
    auto pathList = res->getContents()->getAllPaths();
    state.setCwd(res);
-   cout << "map after path resolution:" << endl;
-   state.getCwd()->getContents()->printMap();
    fn_pwd(state, words);
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
@@ -106,8 +101,15 @@ void fn_ls (inode_state& state, const wordvec& words){
 void DFS(inode_ptr node) {
    auto dirs = node->getContents()->getAllDirs();
    auto all = node->getContents()->getAllPaths();
-   for (auto it = all.begin(); it != all.end(); ++it)
-      cout << *it << endl;
+   string pwd = node->getContents()->getPwd();
+   pwd = pwd.substr(2, pwd.length()-2);
+   cout << pwd << ":" << endl;
+   for (auto it = all.begin(); it != all.end(); ++it){
+   	if (node->isDirectory())
+    	cout << "      " << node->get_inode_nr() << "      " << node->getContents()->getSize() << " " << *it << "/" << endl;
+  	else 
+  		cout << "      " << node->get_inode_nr() << "      " << node->getSize() << " " << *it << endl; 
+	}
    for (auto it = dirs.begin(); it != dirs.end(); ++it){
       DFS(node->getContents()->getNode(*it));
    }
@@ -223,11 +225,6 @@ void fn_rm (inode_state& state, const wordvec& words){
          res->getContents()->remove(name);
          return;
    }
-   /*
-   for (auto it = words.begin()+1; it != words.end(); ++it){
-      state.getCwd()->getContents()->remove(*it);
-   }
-   */
 }
 
 void fn_rmr (inode_state& state, const wordvec& words){
