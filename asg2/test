@@ -1,0 +1,11 @@
+mkdir a
+mkdir b
+mkdir a/dir1
+mkdir a/dir2
+mkdir a/dir3
+mkdir a/dir1/dir4
+make a/dir1/dir4/f1 testf1
+make a/dir1/dir4/f2 testf2
+make a/dir1/f3 testf3
+make a/dit1/f4 testf4
+make a/dir2/f5 testf5

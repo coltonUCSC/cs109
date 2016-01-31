@@ -111,7 +111,7 @@ void fn_lsr (inode_state& state, const wordvec& words){
    auto pathList = newCwd->getContents()->getAllDirs();
    wordvec ls {"ls"};
    fn_ls(state, ls);
-   for(int i = 0; i < pathList.size(); i++){
+   for(size_t i = 0; i < pathList.size(); i++){
       DFS(pathList[i], state);
    }
    state.setCwd(ogcwd);
@@ -124,7 +124,7 @@ void DFS(string s, inode_state& state){
    if (dirList.size() == 0)
       return;
    map<string, int> disc;
-   for (int i = 0; i < dirList.size(); i++){
+   for (size_t i = 0; i < dirList.size(); i++){
       disc[dirList[i]] = 0;
    }
    for (auto it = disc.begin(); it != disc.end(); ++it){
@@ -235,6 +235,7 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   cout << "vec----------" << words << endl;
    if (words.size() <= 0) return; //error here?
    wordvec pathvec = split(words[1],"/");
    string fullpath = "";
@@ -263,7 +264,27 @@ void fn_rm (inode_state& state, const wordvec& words){
 void fn_rmr (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
    DEBUGF ('c', words);
+   inode_ptr ogcwd = state.getCwd();
+   inode_ptr res = resolvePath(words[1], state.getCwd());
+   if (res == nullptr) return;
+   DFSr(res);
+   fn_rm(state, words);
 }
+
+//recursive call, call until the deepest directoy has no more directories
+//begin deleting its contents, function returns and is then continued from
+//its parents call, begin deleting children and so on...
+void DFSr(inode_ptr node){
+   auto dirs = node->getContents()->getAllDirs();
+   auto files = node->getContents()->getAllFiles();
+   for (auto it = dirs.begin(); it != dirs.end(); ++it){
+      DFSr(node->getContents()->getNode(*it));
+   }
+   for (auto it = files.begin(); it != files.end(); ++it){
+      node->getContents()->remove(*it);
+   }
+}
+
 
 inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
    wordvec temp = split (path, "/");

@@ -136,6 +136,9 @@ void plain_file::printMap(){
   throw file_error ("is a plain file");
 }
 
+wordvec plain_file::getAllFiles(){
+   throw file_error ("nah");
+}
 string plain_file::getPwd(){
   throw file_error ("is a plain file");
 }
@@ -212,6 +215,18 @@ wordvec directory::getAllDirs(){
       dirList.push_back(iter->first);
   }
   return dirList;
+}
+
+wordvec directory::getAllFiles(){
+   wordvec fileList;
+   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
+      if (iter->first != "." && iter->first != ".."){
+         fileList.push_back(iter->first);
+         cout << iter->first << endl;
+      }
+
+   }
+   return fileList;
 }
 
 inode_ptr directory::getNode(const string& path){

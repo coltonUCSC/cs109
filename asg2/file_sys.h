@@ -67,6 +67,7 @@ class inode {
       static int next_inode_nr;
       int inode_nr;
       base_file_ptr contents;
+      static int size;
    public:
       bool isDirectory() { return isDir; }
       inode (file_type);
@@ -103,6 +104,7 @@ class base_file {
       virtual string getPath(inode_ptr node) = 0;
       virtual wordvec getAllPaths() = 0;
       virtual wordvec getAllDirs() = 0;
+      virtual wordvec getAllFiles() = 0;
       virtual inode_ptr getNode(const string& path) = 0;
       virtual void printMap() = 0;
       virtual string getPwd() = 0;
@@ -132,6 +134,7 @@ class plain_file: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual wordvec getAllDirs() override;
+      virtual wordvec getAllFiles() override;
       virtual inode_ptr getNode(const string& path) override;
       virtual void printMap() override;
       virtual string getPwd() override;
@@ -162,6 +165,7 @@ class directory: public base_file {
       map<string,inode_ptr> dirents;
       string fullPath;
    public:
+
       virtual size_t size() const override;
       virtual const wordvec& readfile() const override;
       virtual void writefile (const wordvec& newdata) override;
@@ -172,6 +176,7 @@ class directory: public base_file {
       virtual string getPath(inode_ptr node) override;
       virtual wordvec getAllPaths() override;
       virtual wordvec getAllDirs() override;
+      virtual wordvec getAllFiles() override;
       virtual inode_ptr getNode(const string& path) override;
       virtual void printMap() override;
       virtual string getPwd() override;
