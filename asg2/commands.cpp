@@ -101,8 +101,15 @@ void fn_ls (inode_state& state, const wordvec& words){
 void DFS(inode_ptr node) {
    auto dirs = node->getContents()->getAllDirs();
    auto all = node->getContents()->getAllPaths();
-   for (auto it = all.begin(); it != all.end(); ++it)
-      cout << *it << endl;
+   string pwd = node->getContents()->getPwd();
+   pwd = pwd.substr(2, pwd.length()-2);
+   cout << pwd << ":" << endl;
+   for (auto it = all.begin(); it != all.end(); ++it){
+   	if (node->isDirectory())
+    	cout << "      " << node->get_inode_nr() << "      " << node->getContents()->getSize() << " " << *it << "/" << endl;
+  	else 
+  		cout << "      " << node->get_inode_nr() << "      " << node->getSize() << " " << *it << endl; 
+	}
    for (auto it = dirs.begin(); it != dirs.end(); ++it){
       DFS(node->getContents()->getNode(*it));
    }
