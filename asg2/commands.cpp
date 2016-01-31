@@ -58,12 +58,12 @@ void fn_cd (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
 	inode_ptr ogcwd = state.getCwd();
-	if (words.size() == 1){
+	if (words.size() == 1 || words[1] == "/"){
 		state.setCwd(state.getRoot()->getContents()->getNode("/"));
 		return;
 	}
 	if (words.size() > 2) return;
-	if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
+	//if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
 	inode_ptr res = resolvePath(words[1], state.getCwd());
 	if (res == nullptr) return;
 	if (!res->isDirectory()) return;
@@ -93,14 +93,23 @@ void fn_ls (inode_state& state, const wordvec& words){
 	auto pathList = res->getContents()->getAllPaths();
 	state.setCwd(res);
 	string pwd = res->getContents()->getPwd();
-	pwd = pwd.substr(2, pwd.length()-2);
-	cout << pwd << ":" << endl;
+	if (words.size() == 1){
+		if (pwd.length() == 2){
+			cout << "/:" << endl;
+		}
+		else{ 
+			pwd = pwd.substr(2, pwd.length()-2);
+			cout << pwd << ":" << endl;
+		}
+	} else {
+		cout << words[1] << ":" << endl;
+	}
 	for (size_t i = 0; i < pathList.size(); i++){
 		if (res->getContents()->getNode(pathList[i])->isDirectory() && (pathList[i] != "..") && (pathList[i] != "."))
-			cout << setw(6) << res->getContents()->getNode(pathList[i])->get_inode_nr() << setw(6)
+			cout << setw(6) << res->getContents()->getNode(pathList[i])->get_inode_nr()-1 << setw(6)
 		<< res->getContents()->getNode(pathList[i])->getContents()->getsize() << " " << pathList[i] << "/" << endl;
 		else 
-			cout << setw(6) << res->getContents()->getNode(pathList[i])->get_inode_nr() << setw(6)
+			cout << setw(6) << res->getContents()->getNode(pathList[i])->get_inode_nr()-1 << setw(6)
 		<< res->getContents()->getNode(pathList[i])->getContents()->getsize() << " "  << pathList[i] << endl;
 	}
 	state.setCwd(ogcwd);
@@ -110,14 +119,19 @@ void DFS(inode_ptr node) {
 	auto dirs = node->getContents()->getAllDirs();
 	auto all = node->getContents()->getAllPaths();
 	string pwd = node->getContents()->getPwd();
-	pwd = pwd.substr(2, pwd.length()-2);
-	cout << pwd << ":" << endl;
+	if (pwd.length() == 2){
+		cout << "/:" << endl;
+	}
+	else{ 
+		pwd = pwd.substr(2, pwd.length()-2);
+		cout << pwd << ":" << endl;
+	}
 	for (auto it = all.begin(); it != all.end(); ++it){
 		if (node->getContents()->getNode(*it)->isDirectory() && (*it != "..") && (*it != "."))
-			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr() << setw(6)
+			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
 		<< node->getContents()->getNode(*it)->getContents()->getsize() << " " << *it << "/" << endl;
 		else 
-			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr() << setw(6)
+			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
 		<< node->getContents()->getNode(*it)->getContents()->getsize() << " "  << *it << endl; 
 	}
 	for (auto it = dirs.begin(); it != dirs.end(); ++it){

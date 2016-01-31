@@ -165,7 +165,7 @@ int plain_file::getsize() {
    int count = 0;
    for(auto it = data.begin(); it != data.end(); ++it)
       count += (*it).length();
-   return count;
+   return count + (data.size()-1);
 }
 
 int directory::getsize() {
