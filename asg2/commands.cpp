@@ -92,7 +92,9 @@ void fn_ls (inode_state& state, const wordvec& words){
    if (res == nullptr) return;
    auto pathList = res->getContents()->getAllPaths();
    state.setCwd(res);
-   fn_pwd(state, words);
+   string pwd = node->getContents()->getPwd();
+   pwd = pwd.substr(2, pwd.length()-2);
+   cout << pwd << ":" << endl;
    for (size_t i = 0; i < pathList.size(); i++){
       cout << pathList[i] << endl;
    }
@@ -106,12 +108,12 @@ void DFS(inode_ptr node) {
    pwd = pwd.substr(2, pwd.length()-2);
    cout << pwd << ":" << endl;
    for (auto it = all.begin(); it != all.end(); ++it){
-   	if (node->isDirectory())
+   	if (node->getContents()->getNode(*it)->isDirectory() && (*it != "..") && (*it != "."))
     	cout << setw(6) << node->get_inode_nr() << setw(6)
       << node->getContents()->getsize() << " " << *it << "/" << endl;
-  	else
+  	else 
   		cout << setw(6) << node->get_inode_nr() << setw(6)
-      << node->getContents()->getsize() << " "  << *it << endl;
+      << node->getContents()->getsize() << " "  << *it << endl; 
 	}
    for (auto it = dirs.begin(); it != dirs.end(); ++it){
       DFS(node->getContents()->getNode(*it));
