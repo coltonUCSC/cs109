@@ -117,53 +117,58 @@ void fn_ls (inode_state& state, const wordvec& words){
 	}
 }
 
-	void DFS(inode_ptr node) {
-		auto dirs = node->getContents()->getAllDirs();
-		auto all = node->getContents()->getAllPaths();
-		string pwd = node->getContents()->getPwd();
-		if (pwd.length() == 2){
-			cout << "/:" << endl;
-		}
-		else{ 
-			pwd = pwd.substr(2, pwd.length()-2);
-			cout << pwd << ":" << endl;
-		}
-		for (auto it = all.begin(); it != all.end(); ++it){
-			if (node->getContents()->getNode(*it)->isDirectory() && (*it != "..") && (*it != "."))
-				cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
-			<< node->getContents()->getNode(*it)->getContents()->getsize() << " " << *it << "/" << endl;
-			else 
-				cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
-			<< node->getContents()->getNode(*it)->getContents()->getsize() << " "  << *it << endl; 
-		}
-		for (auto it = dirs.begin(); it != dirs.end(); ++it){
-			DFS(node->getContents()->getNode(*it));
-		}
+void DFS(inode_ptr node) {
+	auto dirs = node->getContents()->getAllDirs();
+	auto all = node->getContents()->getAllPaths();
+	string pwd = node->getContents()->getPwd();
+	if (pwd.length() == 2){
+		cout << "/:" << endl;
 	}
+	else{ 
+		pwd = pwd.substr(2, pwd.length()-2);
+		cout << pwd << ":" << endl;
+	}
+	for (auto it = all.begin(); it != all.end(); ++it){
+		if (node->getContents()->getNode(*it)->isDirectory() && (*it != "..") && (*it != "."))
+			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
+		<< node->getContents()->getNode(*it)->getContents()->getsize() << " " << *it << "/" << endl;
+		else 
+			cout << setw(6) << node->getContents()->getNode(*it)->get_inode_nr()-1 << setw(6)
+		<< node->getContents()->getNode(*it)->getContents()->getsize() << " "  << *it << endl; 
+	}
+	for (auto it = dirs.begin(); it != dirs.end(); ++it){
+		DFS(node->getContents()->getNode(*it));
+	}
+}
 
-	void fn_lsr (inode_state& state, const wordvec& words){
-		DEBUGF ('c', state);
-		DEBUGF ('c', words);
-		inode_ptr res = resolvePath(words[1], state.getCwd());
-		if (res == nullptr) return;
-   //fn_ls (state, words);
+void fn_lsr (inode_state& state, const wordvec& words){
+	DEBUGF ('c', state);
+	DEBUGF ('c', words);
+	for(auto it = words.begin(); it != words.end(); ++it){
+		inode_ptr res;
+		if (*it == "/")
+			res = state.getRoot()->getContents()->getNode("/");
+		else
+			res = resolvePath(*it, state.getCwd());
+		if (res == nullptr) continue;
 		DFS(res);
 	}
+}
 
-	void fn_make (inode_state& state, const wordvec& words){
-		DEBUGF ('c', state);
-		DEBUGF ('c', words);
-		if (words.size() <= 0){
-			cout << "mkdir: missing operand" << endl;
-			return;
-		}
-		wordvec newData(words.begin()+2, words.end());
+void fn_make (inode_state& state, const wordvec& words){
+	DEBUGF ('c', state);
+	DEBUGF ('c', words);
+	if (words.size() <= 0){
+		cout << "mkdir: missing operand" << endl;
+		return;
+	}
+	wordvec newData(words.begin()+2, words.end());
 
-		wordvec pathvec = split (words[1], "/");
-		string fullpath = "";
-		string filename = *(pathvec.end()-1);
-		for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
-			fullpath += (*it + "/");
+	wordvec pathvec = split (words[1], "/");
+	string fullpath = "";
+	string filename = *(pathvec.end()-1);
+	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
+		fullpath += (*it + "/");
    inode_ptr res = resolvePath(fullpath, state.getCwd()); //resulting path before filename
    if (res == nullptr) return;
    inode_ptr file = res->getContents()->getNode(filename); //search directory for filename if existing
@@ -289,12 +294,3 @@ void fn_rm (inode_state& state, const wordvec& words){
    		}
    		return oldcwd;
    	}
-
-/*
-inode_ptr search (inode_ptr dir, const string& path){
-   //inode_ptr = dir->find(path);
-   //if !path return;
-   //if path return inode_ptr
-   //search(inode_ptr)
-}
-*/
