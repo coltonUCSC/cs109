@@ -3,6 +3,7 @@
 #include "commands.h"
 #include "debug.h"
 #include <stack>
+#include <iomanip>
 
 command_hash cmd_hash {
    {"cat"   , fn_cat   },
@@ -106,9 +107,11 @@ void DFS(inode_ptr node) {
    cout << pwd << ":" << endl;
    for (auto it = all.begin(); it != all.end(); ++it){
    	if (node->isDirectory())
-    	cout << "      " << node->get_inode_nr() << "      " << node->getContents()->getSize() << " " << *it << "/" << endl;
-  	else 
-  		cout << "      " << node->get_inode_nr() << "      " << node->getSize() << " " << *it << endl; 
+    	cout << setw(6) << node->get_inode_nr() << setw(6)
+      << node->getContents()->getsize() << " " << *it << "/" << endl;
+  	else
+  		cout << setw(6) << node->get_inode_nr() << setw(6)
+      << node->getContents()->getsize() << " "  << *it << endl;
 	}
    for (auto it = dirs.begin(); it != dirs.end(); ++it){
       DFS(node->getContents()->getNode(*it));
