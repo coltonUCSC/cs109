@@ -162,6 +162,8 @@ void directory::writefile (const wordvec&) {
 }
 
 int plain_file::getsize() {
+   if (data.size() == 0)
+      return 0;   
    int count = 0;
    for(auto it = data.begin(); it != data.end(); ++it)
       count += (*it).length();

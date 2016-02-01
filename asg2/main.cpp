@@ -86,7 +86,7 @@ int main (int argc, char** argv) {
          }catch (command_error& error) {
             // If there is a problem discovered in any function, an
             // exn is thrown and printed here.
-            complain() << error.what() << endl;
+            cerr << error.what() << endl;
          }
       }
    } catch (ysh_exit&) {

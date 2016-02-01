@@ -33,6 +33,7 @@ command_fn find_command_fn (const string& cmd) {
 
 command_error::command_error (const string& what):
 runtime_error (what) {
+	exit_status::set(1);
 }
 
 int exit_status_message() {
@@ -44,29 +45,45 @@ int exit_status_message() {
 void fn_cat (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-	string filename = *(words.end()-1);
-	inode_ptr ogcwd = state.getCwd();
-	inode_ptr res = resolvePath(words[1], state.getCwd());
-	if (res == nullptr){
-		throw command_error ("cat: " + filename + ": file does not exist");
-		return; }
-   if (res->isDirectory()) return; //error here
-   cout << res->getContents()->readfile() << endl;
+	if (words.size() <= 1){
+		throw command_error ("cat: missing operands"); 
+		return;
+	}
+	for (auto it = words.begin()+1; it != words.end(); ++it){
+		string filename = *it;
+		inode_ptr res = resolvePath(*it, state.getCwd());
+		if (res == nullptr){
+			throw command_error ("cat: " + filename + ": No such file or directory");
+			return; 
+		}
+   		if (res->isDirectory()){
+   			throw command_error ("cat: " + filename + ": Is a directory");
+   			return;
+   		} 
+   		cout << res->getContents()->readfile() << endl;
+	}
 }
 
 void fn_cd (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-	inode_ptr ogcwd = state.getCwd();
+	if (words.size() > 2){
+		throw command_error ("cd: Only one operand may be given"); 
+		return;
+	}
 	if (words.size() == 1 || words[1] == "/"){
 		state.setCwd(state.getRoot()->getContents()->getNode("/"));
 		return;
 	}
-	if (words.size() > 2) return;
-	//if (ogcwd == state.getRoot()->getContents()->getNode("/") && words[1] == "..") return;
+	
 	inode_ptr res = resolvePath(words[1], state.getCwd());
-	if (res == nullptr) return;
-	if (!res->isDirectory()) return;
+	if (res == nullptr) {
+		throw command_error ("cd: " + words[1] + ": No such file or directory");
+	}
+	if (!res->isDirectory()){ 
+		throw command_error ("cd: " + words[1] + ": Is not a directory");
+		return;
+	}
 	state.setCwd(res);
 }
 
@@ -79,6 +96,15 @@ void fn_echo (inode_state& state, const wordvec& words){
 void fn_exit (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
+	if (words.size() == 1){
+		exit_status::set(0);
+	}
+	else if (isdigit(words[1][0])){
+		exit_status::set(atoi(words[1].c_str()));
+	}
+	else {
+		exit_status::set(127);
+	}
 	throw ysh_exit();
 }
 
@@ -91,7 +117,9 @@ void fn_ls (inode_state& state, const wordvec& words){
 		inode_ptr res = ogcwd;
 		if (words.size() > 1)
 			res = resolvePath(words[i], state.getCwd());
-		if (res == nullptr) continue;
+		if (res == nullptr) {
+			throw command_error ("ls: " + words[i] + ": No such file or directory");
+		}
 		auto pathList = res->getContents()->getAllPaths();
 		state.setCwd(res);
 		string pwd = res->getContents()->getPwd();
@@ -144,13 +172,19 @@ void DFS(inode_ptr node) {
 void fn_lsr (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-	for(auto it = words.begin(); it != words.end(); ++it){
+	if (words.size() == 1){
+		DFS(state.getCwd());
+		return;
+	}
+	for(auto it = words.begin()+1; it != words.end(); ++it){
 		inode_ptr res;
 		if (*it == "/")
 			res = state.getRoot()->getContents()->getNode("/");
 		else
 			res = resolvePath(*it, state.getCwd());
-		if (res == nullptr) continue;
+		if (res == nullptr) {
+			throw command_error ("lsr: " + *it + ": No such file or directory");
+		}
 		DFS(res);
 	}
 }
@@ -158,45 +192,46 @@ void fn_lsr (inode_state& state, const wordvec& words){
 void fn_make (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-	if (words.size() <= 0){
-		cout << "mkdir: missing operand" << endl;
+	if (words.size() <= 1){
+		throw command_error ("make: Missing operands");
 		return;
 	}
 	wordvec newData(words.begin()+2, words.end());
-
 	wordvec pathvec = split (words[1], "/");
 	string fullpath = "";
 	string filename = *(pathvec.end()-1);
 	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
 		fullpath += (*it + "/");
    inode_ptr res = resolvePath(fullpath, state.getCwd()); //resulting path before filename
-   if (res == nullptr) return;
+   if (res == nullptr) {
+		throw command_error ("make: " + fullpath + ": No such file or directory");
+		return;
+	}
    inode_ptr file = res->getContents()->getNode(filename); //search directory for filename if existing
    if (file != nullptr && res != nullptr) {
-   	if(file->isDirectory())
+   	if(file->isDirectory()) {
+   		throw command_error ("make: " + fullpath + ": Is a directory");
    		return;
+   	}
    	file->getContents()->writefile(newData);
    	return;
    }
    res->getContents()->mkfile(filename);
    res->getContents()->getNode(filename)->getContents()->writefile(newData);
-
-   inode_ptr ogcwd = state.getCwd();
 }
 
 void fn_mkdir (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
 
-	if (words.size() <= 0){
-		cout << "mkdir: missing operand" << endl;
+	if (words.size() <= 1){
+		throw command_error ("mkdir: missing operand");
 		return;
 	}
-   //root case?
+
 	if (words[1] == "/"){
-		inode_ptr ogcwd = state.getCwd();
 		auto root = state.getCwd()->getContents()->mkdir(words[1]);
-		root->getContents()->setPath("..", ogcwd);
+		root->getContents()->setPath("..", state.getCwd());
 		root->getContents()->setPath(".", root);
 		return;
 	}
@@ -207,11 +242,16 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
 		fullpath += (*it + "/");
 	inode_ptr res = resolvePath(fullpath,state.getCwd());
-	if (res == nullptr) return;
+	if (res == nullptr) {
+		throw command_error ("mkdir: " + fullpath + ": No such file or directory");
+		return;
+	}
 	inode_ptr directory = res->getContents()->getNode(dirname);
-   if (directory != nullptr && res != nullptr) //if filename exists and path exists
-      //dont overwrite anything (ie file or directory)
-   	return;
+    if (directory != nullptr && res != nullptr){ //if filename exists and path exists
+        //dont overwrite anything (ie file or directory)
+   		throw command_error ("mkdir: " + fullpath + ": Directory already exists");
+   		return;
+   	}
    inode_ptr dir = res->getContents()->mkdir(dirname);
    dir->getContents()->setPath("..", res);
    dir->getContents()->setPath(".",res->getContents()->getNode(dirname));
@@ -220,7 +260,16 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 void fn_prompt (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-	state.setPrompt(words[1]);
+	if (words.size() <= 1){
+		throw command_error ("prompt: missing operand");
+		return;
+	}
+	string newP;
+	for (auto it = words.begin()+1; it != words.end(); ++it){
+		newP += *it;
+		newP += " ";
+	}
+	state.setPrompt(newP);
 }
 
 void fn_pwd (inode_state& state, const wordvec& words){
@@ -238,59 +287,72 @@ void fn_pwd (inode_state& state, const wordvec& words){
 void fn_rm (inode_state& state, const wordvec& words){
 	DEBUGF ('c', state);
 	DEBUGF ('c', words);
-   if (words.size() <= 0) return; //error here?
-   wordvec pathvec = split(words[1],"/");
-   string fullpath = "";
-   string name = *(pathvec.end()-1);
-   for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
-   	fullpath += (*it + "/");
-   inode_ptr res = resolvePath(fullpath,state.getCwd());
-   if (res == nullptr) return; //error
-   inode_ptr rmfile = res->getContents()->getNode(name);
-   if (res != nullptr && rmfile != nullptr){
-   	if(rmfile->isDirectory()){
-   		if(rmfile->getContents()->getAllPaths().size() <= 2){
-   			res->getContents()->remove(name);
-   			return;
-         } else { return; /* not empty */ }}
-   			res->getContents()->remove(name);
-   			return;
-   		}
-   	}
+	if (words.size() <= 1){
+		throw command_error ("rm: missing operands");
+		return;
+	} 
+	wordvec pathvec = split(words[1],"/");
+	string fullpath = "";
+	string name = *(pathvec.end()-1);
+	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
+		fullpath += (*it + "/");
+	inode_ptr res = resolvePath(fullpath,state.getCwd());
+	if (res == nullptr) {
+		throw command_error ("rm: " + fullpath + ": No such file or directory");
+		return;
+	}
+	inode_ptr rmfile = res->getContents()->getNode(name);
+	if (res != nullptr && rmfile != nullptr){
+		if(rmfile->isDirectory()){
+			if(rmfile->getContents()->getAllPaths().size() <= 2){
+				res->getContents()->remove(name);
+				return;
+     		} else {
+     			throw command_error ("rm: " + fullpath + ": Is a directory that is not empty"); 
+     			return;
+     		}
+     	}
+     	res->getContents()->remove(name);
+     	return;
+     }
+ }
 
-   	void fn_rmr (inode_state& state, const wordvec& words){
-   		DEBUGF ('c', state);
-   		DEBUGF ('c', words);
-   		inode_ptr ogcwd = state.getCwd();
-   		inode_ptr res = resolvePath(words[1], state.getCwd());
-   		if (res == nullptr) return;
-   		DFSr(res);
-   		fn_rm(state, words);
-   	}
+void fn_rmr (inode_state& state, const wordvec& words){
+ 	DEBUGF ('c', state);
+ 	DEBUGF ('c', words);
+ 	if (words.size() <= 1){
+ 		throw command_error ("rmr: missing operands");
+ 		return;
+ 	}
+ 	inode_ptr res = resolvePath(words[1], state.getCwd());
+ 	if (res == nullptr) {
+ 		throw command_error ("rmr: " + words[1] + ": No such file or directory");
+ 		return;
+ 	}
+ 	DFSr(res);
+ 	fn_rm(state, words);
+ }
 
 //recursive call, call until the deepest directoy has no more directories
 //begin deleting its contents, function returns and is then continued from
 //its parents call, begin deleting its children and so on...
 //sudo depth?
-   	void DFSr(inode_ptr node){
-   		auto dirs = node->getContents()->getAllDirs();
-   		auto files = node->getContents()->getAllFiles();
-   		for (auto it = dirs.begin(); it != dirs.end(); ++it){
-   			DFSr(node->getContents()->getNode(*it));
-   		}
-   		for (auto it = files.begin(); it != files.end(); ++it){
-   			node->getContents()->remove(*it);
-   		}
+void DFSr(inode_ptr node){
+   	auto dirs = node->getContents()->getAllDirs();
+   	auto files = node->getContents()->getAllFiles();
+   	for (auto it = dirs.begin(); it != dirs.end(); ++it){
+   		DFSr(node->getContents()->getNode(*it));
    	}
-
-   	inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
-   		wordvec temp = split (path, "/");
-
-   		for(unsigned i=0; i < temp.size(); i++){
-      //if (!oldcwd->getContents()->getNode(temp[i])->isDirectory())
-         //return;
-   			if (oldcwd == nullptr) return nullptr;
-   			oldcwd = oldcwd->getContents()->getNode(temp[i]);
-   		}
-   		return oldcwd;
+   	for (auto it = files.begin(); it != files.end(); ++it){
+   		node->getContents()->remove(*it);
    	}
+}
+
+inode_ptr resolvePath (const string& path, inode_ptr oldcwd){
+   	wordvec temp = split (path, "/");
+	for(unsigned i=0; i < temp.size(); i++){
+   		if (oldcwd == nullptr) return nullptr;
+   		oldcwd = oldcwd->getContents()->getNode(temp[i]);
+    }
+   	return oldcwd;
+}
