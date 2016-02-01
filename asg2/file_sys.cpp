@@ -247,7 +247,12 @@ wordvec directory::getAllFiles(){
 }
 
 inode_ptr directory::getNode(const string& path){
+  auto it = dirents.find(path);
+   if (it == dirents.end())
+      return nullptr;
+   return dirents.find(path)->second;
 }
+
 
 string directory::getPwd(){
   return fullPath;

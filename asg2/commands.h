@@ -31,7 +31,7 @@ class command_error: public runtime_error {
 
 inode_ptr resolvePath (const string&, inode_ptr);
 void DFS(string s, inode_state& state);
-//void DFSr(inode_state& state);
+
 // execution functions -
 void DFSr (inode_ptr);
 void DFS (inode_ptr);

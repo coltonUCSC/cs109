@@ -84,6 +84,7 @@ int main (int argc, char** argv) {
             DEBUGF ('y', "words = " << words);
             if (words.size() <= 0)
                continue;
+            // Do nothing for a comment
             if (words[0][0] == '#')
                continue;
             command_fn fn = find_command_fn (words.at(0));
