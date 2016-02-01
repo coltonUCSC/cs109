@@ -18,6 +18,7 @@ command_hash cmd_hash {
    {"pwd"   , fn_pwd   },
    {"rm"    , fn_rm    },
    {"rmr"   , fn_rmr   },
+   {"#"     , fn_ignore}
 };
 
 command_fn find_command_fn (const string& cmd) {
@@ -35,11 +36,19 @@ command_error::command_error (const string& what):
 runtime_error (what) {
 }
 
+
+
 int exit_status_message() {
    int exit_status = exit_status::get();
    cout << execname() << ": exit(" << exit_status << ")" << endl;
    return exit_status;
 }
+
+
+void fn_ignore(inode_state& state, const wordvec& words){
+   return;
+}
+
 
 void fn_cat (inode_state& state, const wordvec& words){
    DEBUGF ('c', state);
@@ -48,7 +57,7 @@ void fn_cat (inode_state& state, const wordvec& words){
    inode_ptr ogcwd = state.getCwd();
    inode_ptr res = resolvePath(words[1], state.getCwd());
    if (res == nullptr){
-      throw command_error ("cat: " + filename + ": file does not exist");
+      throw file_error ("cat: " + filename + ": file does not exist");
       return; }
       if (res->isDirectory()) return; //error here
       cout << res->getContents()->readfile() << endl;

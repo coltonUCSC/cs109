@@ -31,6 +31,8 @@ void DFS(string s, inode_state& state);
 void DFSr (inode_ptr);
 void DFS (inode_ptr);
 
+void fn_ignore (inode_state& state, const wordvec& words);
+
 void fn_cat    (inode_state& state, const wordvec& words);
 void fn_cd     (inode_state& state, const wordvec& words);
 void fn_echo   (inode_state& state, const wordvec& words);
@@ -43,6 +45,8 @@ void fn_prompt (inode_state& state, const wordvec& words);
 void fn_pwd    (inode_state& state, const wordvec& words);
 void fn_rm     (inode_state& state, const wordvec& words);
 void fn_rmr    (inode_state& state, const wordvec& words);
+
+
 
 command_fn find_command_fn (const string& command);
 
