@@ -1,4 +1,9 @@
 // $Id: file_sys.cpp,v 1.5 2016-01-14 16:16:52-08 - - $
+// Colton Willey
+// cwwilley@ucsc.edu
+//
+// Jacob Janowski
+// jnjanows@ucsc.edu
 
 #include <iostream>
 #include <stdexcept>
@@ -45,8 +50,6 @@ void inode_state::setCwd(inode_ptr node){
   cwd = node;
 }
 
-// TODO double check to make sure this does not
-// violate encapsulation rules
 inode_ptr inode_state::getRoot(){
   return root;
 }
@@ -132,10 +135,6 @@ inode_ptr plain_file::getNode(const string&){
   throw file_error ("is a plain file");
 }
 
-void plain_file::printMap(){
-  throw file_error ("is a plain file");
-}
-
 wordvec plain_file::getAllFiles(){
    throw file_error ("nah");
 }
@@ -161,6 +160,7 @@ void directory::writefile (const wordvec&) {
    throw file_error ("is a directory");
 }
 
+// calculate and return file size
 int plain_file::getsize() {
    if (data.size() == 0)
       return 0;   
@@ -175,18 +175,13 @@ int directory::getsize() {
    return paths.size();
 }
 
-
-// Preconditions:
-// filename is the relative pathname of the parent
-// directory of the file or directory to remove.
-// If the filename maps to a directory, there will be no
-// subdirectories (or files?) inside.  Any recursion logic
-// will be handled by fn_rmr()
+// remove file or directory
 void directory::remove (const string& filename) {
    DEBUGF ('i', filename);
    dirents.erase(filename);
 }
 
+// create a new directory and set its pwd upon creation
 inode_ptr directory::mkdir (const string& dirname) {
    DEBUGF ('i', dirname);
    inode_ptr newDir = make_shared<inode>(file_type::DIRECTORY_TYPE);
@@ -195,6 +190,7 @@ inode_ptr directory::mkdir (const string& dirname) {
    return newDir;
 }
 
+// create a new file
 inode_ptr directory::mkfile (const string& filename) {
    DEBUGF ('i', filename);
    inode_ptr newFile = make_shared<inode>(file_type::PLAIN_TYPE);
@@ -202,10 +198,14 @@ inode_ptr directory::mkfile (const string& filename) {
    return newFile;
 }
 
+// adds an entry to the file list without actually creating anything
+// used primarily for adding . and .. as directory entries
+// so that path resolution works correctly.  
 void directory::setPath(const string& name, inode_ptr node){
   dirents.insert(pair<string,inode_ptr>(name,node));
 }
 
+// get path of a node
 string directory::getPath(inode_ptr node){
   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
     if (iter->second == node){
@@ -215,6 +215,7 @@ string directory::getPath(inode_ptr node){
   return nullptr;
 }
 
+// returns a wordvec of all path entries in the directory
 wordvec directory::getAllPaths(){
   wordvec pathList;
   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
@@ -223,40 +224,29 @@ wordvec directory::getAllPaths(){
   return pathList;
 }
 
+// like getAllPaths() but only returns dirs, used for lsr
 wordvec directory::getAllDirs(){
   wordvec dirList;
   for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
-    if ((iter->second->isDirectory()) && (iter->first != ".") && (iter->first != ".."))
+    if ((iter->second->isDirectory())
+     && (iter->first != ".") && (iter->first != ".."))
       dirList.push_back(iter->first);
   }
   return dirList;
 }
 
+// like getAllPaths() but only returns files, used for rmr
 wordvec directory::getAllFiles(){
    wordvec fileList;
    for (auto iter = dirents.begin(); iter != dirents.end(); ++iter){
       if (iter->first != "." && iter->first != ".."){
          fileList.push_back(iter->first);
-         //cout << iter->first << endl;
       }
-
    }
    return fileList;
 }
 
 inode_ptr directory::getNode(const string& path){
-   auto it = dirents.find(path);
-   if (it == dirents.end())
-      return nullptr;
-   return dirents.find(path)->second;
-}
-
-void directory::printMap(){
-  cout << "Map contents:" << endl;
-  for (auto it = dirents.begin(); it != dirents.end(); ++it){
-    cout << it->first << " -> " << it->second << endl;
-  }
-  cout << endl;
 }
 
 string directory::getPwd(){

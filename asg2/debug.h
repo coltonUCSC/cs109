@@ -1,4 +1,9 @@
 // $Id: debug.h,v 1.7 2016-01-14 16:16:52-08 - - $
+// Colton Willey
+// cwwilley@ucsc.edu
+//
+// Jacob Janowski
+// jnjanows@ucsc.edu
 
 #ifndef __DEBUG_H__
 #define __DEBUG_H__

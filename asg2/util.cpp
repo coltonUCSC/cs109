@@ -1,4 +1,9 @@
 // $Id: util.cpp,v 1.11 2016-01-13 16:21:53-08 - - $
+// Colton Willey
+// cwwilley@ucsc.edu
+//
+// Jacob Janowski
+// jnjanows@ucsc.edu
 
 #include <cstdlib>
 #include <unistd.h>

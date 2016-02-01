@@ -1,4 +1,9 @@
 // $Id: file_sys.h,v 1.4 2016-01-14 16:16:52-08 - - $
+// Colton Willey
+// cwwilley@ucsc.edu
+//
+// Jacob Janowski
+// jnjanows@ucsc.edu
 
 #ifndef __INODE_H__
 #define __INODE_H__
@@ -107,7 +112,6 @@ class base_file {
       virtual wordvec getAllDirs() = 0;
       virtual wordvec getAllFiles() = 0;
       virtual inode_ptr getNode(const string& path) = 0;
-      virtual void printMap() = 0;
       virtual string getPwd() = 0;
       virtual void setPwd(string newPwd) = 0;
 };
@@ -138,7 +142,6 @@ class plain_file: public base_file {
       virtual wordvec getAllDirs() override;
       virtual wordvec getAllFiles() override;
       virtual inode_ptr getNode(const string& path) override;
-      virtual void printMap() override;
       virtual string getPwd() override;
       virtual void setPwd(string newPwd) override;
 };
@@ -180,7 +183,6 @@ class directory: public base_file {
       virtual wordvec getAllDirs() override;
       virtual wordvec getAllFiles() override;
       virtual inode_ptr getNode(const string& path) override;
-      virtual void printMap() override;
       virtual string getPwd() override;
       virtual void setPwd(string newPwd) override;
 };

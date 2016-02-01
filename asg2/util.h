@@ -1,4 +1,9 @@
 // $Id: util.h,v 1.12 2016-01-14 16:16:52-08 - - $
+// Colton Willey
+// cwwilley@ucsc.edu
+//
+// Jacob Janowski
+// jnjanows@ucsc.edu
 
 // util -
 //    A utility class to provide various services not conveniently
