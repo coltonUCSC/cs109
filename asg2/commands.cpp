@@ -51,7 +51,11 @@ void fn_cat (inode_state& state, const wordvec& words){
 	}
 	for (auto it = words.begin()+1; it != words.end(); ++it){
 		string filename = *it;
-		inode_ptr res = resolvePath(*it, state.getCwd());
+		inode_ptr res;
+		if ((*it)[0] == '/')
+			res = resolvePath(*it, state.getRoot()->getContents()->getNode("/"));
+		else 
+			res = resolvePath(*it, state.getCwd());
 		if (res == nullptr){
 			throw command_error ("cat: " + filename + ": No such file or directory");
 			return; 
@@ -115,8 +119,16 @@ void fn_ls (inode_state& state, const wordvec& words){
 
 	for (size_t i=0; i < words.size(); i++){
 		inode_ptr res = ogcwd;
-		if (words.size() > 1)
-			res = resolvePath(words[i], state.getCwd());
+		if (words.size() > 1 && i == 0)
+			continue;
+		if (words.size() > 1){
+			if (words[i][0] == '/')
+				res = resolvePath(words[i], state.getRoot()->getContents()->getNode("/"));
+			else 
+				res = resolvePath(words[i], state.getCwd());
+		}
+		if (words[i] == "/")
+			res = state.getRoot()->getContents()->getNode("/");
 		if (res == nullptr) {
 			throw command_error ("ls: " + words[i] + ": No such file or directory");
 		}
@@ -181,7 +193,10 @@ void fn_lsr (inode_state& state, const wordvec& words){
 		if (*it == "/")
 			res = state.getRoot()->getContents()->getNode("/");
 		else
-			res = resolvePath(*it, state.getCwd());
+			if ((*it)[0] == '/')
+				res = resolvePath(*it, state.getRoot()->getContents()->getNode("/"));
+			else
+				res = resolvePath(*it, state.getCwd());
 		if (res == nullptr) {
 			throw command_error ("lsr: " + *it + ": No such file or directory");
 		}
@@ -202,7 +217,11 @@ void fn_make (inode_state& state, const wordvec& words){
 	string filename = *(pathvec.end()-1);
 	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
 		fullpath += (*it + "/");
-   inode_ptr res = resolvePath(fullpath, state.getCwd()); //resulting path before filename
+    inode_ptr res;
+    if (fullpath[0] == '/')
+    	res = resolvePath(fullpath, state.getRoot()->getContents()->getNode("/"));
+   	else
+   		res = resolvePath(fullpath, state.getCwd()); //resulting path before filename
    if (res == nullptr) {
 		throw command_error ("make: " + fullpath + ": No such file or directory");
 		return;
@@ -241,7 +260,11 @@ void fn_mkdir (inode_state& state, const wordvec& words){
 	string fullpath = "";
 	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
 		fullpath += (*it + "/");
-	inode_ptr res = resolvePath(fullpath,state.getCwd());
+	inode_ptr res;
+    if (fullpath[0] == '/')
+    	res = resolvePath(fullpath, state.getRoot()->getContents()->getNode("/"));
+   	else
+   		res = resolvePath(fullpath, state.getCwd());
 	if (res == nullptr) {
 		throw command_error ("mkdir: " + fullpath + ": No such file or directory");
 		return;
@@ -296,7 +319,11 @@ void fn_rm (inode_state& state, const wordvec& words){
 	string name = *(pathvec.end()-1);
 	for (auto it = pathvec.begin(); it != pathvec.end()-1; ++it)
 		fullpath += (*it + "/");
-	inode_ptr res = resolvePath(fullpath,state.getCwd());
+	inode_ptr res;
+    if (fullpath[0] == '/')
+    	res = resolvePath(fullpath, state.getRoot()->getContents()->getNode("/"));
+   	else
+   		res = resolvePath(fullpath, state.getCwd());
 	if (res == nullptr) {
 		throw command_error ("rm: " + fullpath + ": No such file or directory");
 		return;
@@ -324,7 +351,11 @@ void fn_rmr (inode_state& state, const wordvec& words){
  		throw command_error ("rmr: missing operands");
  		return;
  	}
- 	inode_ptr res = resolvePath(words[1], state.getCwd());
+ 	inode_ptr res;
+    if (words[1][0] == '/')
+    	res = resolvePath(words[1], state.getRoot()->getContents()->getNode("/"));
+   	else
+   		res = resolvePath(words[1], state.getCwd());
  	if (res == nullptr) {
  		throw command_error ("rmr: " + words[1] + ": No such file or directory");
  		return;
